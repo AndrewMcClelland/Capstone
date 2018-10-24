@@ -1,0 +1,208 @@
+*** Start sendCommand()
+*** End sendCommand()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+RobotController::sendCommand(): Warning: controller output discarded
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+Robot::activate(): Robot already activated! Aborting.
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+*** Start ready()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+*** Start raise()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+*** Start moveTo()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+Robot::moveTo(): Movement not necessary. Aborting.
+*** Start raise()
+*** Start moveTo()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+Robot::moveTo(): Moving from x=0.015 mm, y=0 mm, z=0 mm, j4=0.0071 degrees, j5=0.0036 degrees, j6=-89.9928 degrees
+         with speed = 50% to x=1500 mm, y=-897.5 mm, z=0 mm, j4=0 degrees, j5=0 degrees, j6=-90 degrees
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End moveTo()
+*** End ready()
+*** Start ready()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+*** Start raise()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+*** Start moveTo()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+Robot::moveTo(): Movement not necessary. Aborting.
+*** Start raise()
+*** Start moveTo()
+*** Start update()
+*** Start getPos()
+*** Start getPos() W2
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End getPos() W2
+*** End getPos()
+*** Start update() STATUS
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End update() STATUS
+*** End update()
+Robot::moveTo(): Moving from x=1500 mm, y=-897.48 mm, z=0 mm, j4=0.0071 degrees, j5=0.0036 degrees, j6=-89.9928 degrees
+         with speed = 50% to x=0 mm, y=0 mm, z=0 mm, j4=0 degrees, j5=0 degrees, j6=-90 degrees
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** Start sendCommand()
+*** End sendCommand()
+*** Start block()
+*** End block()
+*** End moveTo()
+*** End ready()
