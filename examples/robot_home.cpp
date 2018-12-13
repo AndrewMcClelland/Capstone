@@ -12,7 +12,7 @@ int main (int argc, char* argv[]) {
 	cout << "Move robot home" << endl;
 
 	// Initialize robot
-	ofstream robot_log("robot.log");
+	ofstream robot_log("./build/robot.log");
 	Robot robot("/dev/ttyS1", "/var/qpool/robot_limits.dat", robot_log);
 
 	// Move robot out of the way
