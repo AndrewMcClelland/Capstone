@@ -17,7 +17,7 @@ PROGRAM_FILE = robot_home.cpp
 all: $(TARGET)
 
 $(TARGET):
-	$(CC) $(CFLAGS) -o ./build/$(TARGET) -I ./src $(PROGRAM_FILE) $(SRC_FILES)
+	$(CC) $(CFLAGS) -o ./build/$(TARGET) -I ./src ./examples/$(PROGRAM_FILE) $(SRC_FILES)
 	echo Build done! $(TARGET) located at ./build/$(TARGET)
 
 clean:
