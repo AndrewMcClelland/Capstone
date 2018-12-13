@@ -32,6 +32,6 @@
 *.app
 
 # libfreenect2 Dir
-/libfreenect2/*
+libfreenect2/
 
-/build/
+build/
