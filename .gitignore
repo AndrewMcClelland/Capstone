@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# libfreenect2 Dir
+/libfreenect2/*
