@@ -33,3 +33,5 @@
 
 # libfreenect2 Dir
 /libfreenect2/*
+
+/build/*
