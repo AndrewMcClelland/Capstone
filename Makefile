@@ -10,16 +10,17 @@ TARGET = robot.out
 # Required src files
 SRC_FILES = ./src/Robot.cpp ./src/RobotController.cpp ./src/RobotLimits.cpp ./src/RobotPosition.cpp ./src/CRScomm.cpp
 
-#TODO - Fix this so that main file is taken in as argument to Make
 # Example program to be compiled
-PROGRAM_FILE = robot_home.cpp
+ifndef PROGRAM_FILE
+	PROGRAM_FILE = ./examples/robot_home.cpp
+endif
 
 all: $(TARGET)
 
 $(TARGET):
-	$(CC) $(CFLAGS) -o ./build/$(TARGET) -I ./src ./examples/$(PROGRAM_FILE) $(SRC_FILES)
-	echo Build done! $(TARGET) located at ./build/$(TARGET)
+	$(CC) $(CFLAGS) -o ./build/$(TARGET) -I ./src $(PROGRAM_FILE) $(SRC_FILES)
+	@echo Build done! $(PROGRAM_FILE) was compiled. $(TARGET) located at ./build/$(TARGET)
 
 clean:
 	rm ./build/*
-	echo Clean done!
+	@echo Clean done!
