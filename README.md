@@ -26,8 +26,8 @@ The purpose of this project is to remotely control an industrial Gantry robot ([
 
 ## Build Instructions
 Makefile in root dir is used to build binaries using `make` command
-* Test example that is compiled is sourced from the `./examples` directory (ex. `robot_home.cpp`)
-  * _Note that `Makefile` needs to be modified to accept the correct example code file using the `PROGRAM_FILE` variable_
+* Test example that is compiled is passed as `PROGRAM_FILE` parameter to `make` (ex. `make PROGRAM_FILE=./examples/robot_move_to.cpp`)
+  * _If no `PROGRAM_FILE` is passed, then default compiled source file is `./examples/robot_home.cpp`_
 * src and header files are pulled from the `./src` directory
 * Compiled binaries are built to the `./build` directory
 * Use `make clean` command to remove __ALL FILES__ in `./build` (_be sure when using this!_)
