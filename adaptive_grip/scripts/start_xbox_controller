@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# This is a quick script to start the XBOX controller.
+# 
+#	- Open a New Terminal to the directory this script is located in
+#  - Enter ./start_xbox_controller
+#	- Profit
+
+sudo xboxdrv --device-by-id 0e6f:011f --type xbox360

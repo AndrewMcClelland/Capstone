@@ -1,0 +1,29 @@
+## The purpose of this file is to tell git what kind of files to 
+## Ignore.
+
+# We don't want to commit executables, because they'll be different
+# and possibly unusable across systems
+exec/*
+
+# Stuff in the log directory will probably change every time
+# Someone runs a program
+log/*
+
+# Directories for any release or debug builds
+*build*/
+*debug*/
+
+#Stuff in the libraries folder, this is where libraries will be buily
+libraries/*
+
+## The following prevents any conventionally named object file from
+# 	being committed
+*.slo
+*.o
+*.lo
+*.obj
+
+## vim byproducts
+*.swp
+*.swo
+

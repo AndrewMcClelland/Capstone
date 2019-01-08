@@ -1,0 +1,13 @@
+
+sudo cpan -i XML::Parser
+ If that failed, you more than likely need to do this:
+ http://www.aliencoders.org/content/installing-xmlparser-fails-and-requires-expat-h/
+
+brew install cmake
+
+brew tap homebrew/science
+brew tap tottakke/openni
+
+brew install openni
+brew install sensor
+
