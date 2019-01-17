@@ -34,4 +34,8 @@
 # libfreenect2 Dir
 libfreenect2/
 
+buildLibFreeNectTest/
+openCV/
+
 build/
+/.metadata/
