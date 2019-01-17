@@ -15,6 +15,8 @@ The purpose of this project is to remotely control an industrial Gantry robot ([
     ├── build                   # Compiled files
     ├── examples                # Sample/test code that tests functionality of robot
     ├── src                     # Source files
+        ├── kinect
+            ├── src             # Source files for Kinect programs
     ├── LICENSE
     ├── Makefile                # Build binaries using src/header files from ./src, example code from ./examples, and store output in ./build
     └── README.md
@@ -25,9 +27,18 @@ The purpose of this project is to remotely control an industrial Gantry robot ([
   * Ubuntu drivers for Kinect v2
 
 ## Build Instructions
+### Programs for Gantry robot (NOT Kinect programs)
 Makefile in root dir is used to build binaries using `make` command
 * Test example that is compiled is passed as `PROGRAM_FILE` parameter to `make` (ex. `make PROGRAM_FILE=./examples/robot_move_to.cpp`)
   * _If no `PROGRAM_FILE` is passed, then default compiled source file is `./examples/robot_home.cpp`_
 * src and header files are pulled from the `./src` directory
 * Compiled binaries are built to the `./build` directory
 * Use `make clean` command to remove __ALL FILES__ in `./build` (_be sure when using this!_)
+
+### Kinect v2 Programs
+`CMakeLists.txt` in root dir is used to create a Makefile in `./build/` for Kinect programs from `./src/kinect/src/`
+To build:
+* Create `./src/kinect/src/main.cpp` that uses `libfreenect2` functionality
+  * _Currently, `cmake` will only accept a program named `./src/kinect/src/main.cpp` and creates output binary as `./build/main` ... (will fix this later)_
+* Navigate to `./build` and run `cmake .. && make`
+* Output binary will be `./build/main`
