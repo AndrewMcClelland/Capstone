@@ -12,13 +12,24 @@ The purpose of this project is to remotely control an industrial Gantry robot ([
 ## Project Structure
 
     .
-    ├── build                   # Compiled files
-    ├── examples                # Sample/test code that tests functionality of robot
-    ├── src                     # Source files
+    ├── build/                      # Compiled files
+        ├── gantry/
+        ├── gesture_recognition/
+        ├── kinect/                 # Holds CMakeLists.txt for building kinect programs
+            ├── bin/                # binaries for kinect programs
+    ├── src/                        # Source files
+        ├── gantry/
+            ├── include/
+            ├── src/
+            ├── examples/           # Sample/test code that tests functionality of robot
+            ├── Makefile            # Build binaries using src/header files from ./src, example code from ./examples, and store output in ./build
+        ├── gesture_recognition/
+            ├── include/
+            ├── src/
         ├── kinect
-            ├── src             # Source files for Kinect programs
+            ├── include/
+            ├── src/                # Source files for Kinect programs
     ├── LICENSE
-    ├── Makefile                # Build binaries using src/header files from ./src, example code from ./examples, and store output in ./build
     └── README.md
     
 ## Dependencies
