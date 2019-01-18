@@ -1,11 +1,3 @@
-/*
-#include "./libfreenect2/include/libfreenect2/libfreenect2.hpp"
-#include "./libfreenect2/include/libfreenect2/frame_listener_impl.h"
-#include "./libfreenect2/include/libfreenect2/registration.h"
-#include "./libfreenect2/include/libfreenect2/packet_pipeline.h"
-#include "./libfreenect2/include/libfreenect2/logger.h"
-*/
-
 #include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/frame_listener_impl.h>
 #include <libfreenect2/registration.h>
@@ -67,6 +59,14 @@ int main(int argc, char **argv) {
     libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
     libfreenect2::Frame *ir = frames[libfreenect2::Frame::Ir];
     libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
+    
+    rgb->format = libfreenect2::Frame::Float;
+    ir->format = libfreenect2::Frame::Float; 
+    depth->format = libfreenect2::Frame::Float;
+
+    //cout << "RGB: " << rgb->data << endl;
+    //cout << "IR: " << ir->data << endl;
+    //cout << "Depth: " << depth->data << endl;
 
     registration->apply(rgb, depth, &undistorted, &registered);
 

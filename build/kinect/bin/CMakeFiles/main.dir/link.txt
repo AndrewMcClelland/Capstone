@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++11  -rdynamic CMakeFiles/main.dir/home/gantryrobot/Desktop/Capstone/src/kinect/src/main.cpp.o  -o main -Wl,-rpath,/home/gantryrobot/freenect2/lib /home/gantryrobot/freenect2/lib/libfreenect2.so -lpthread 
