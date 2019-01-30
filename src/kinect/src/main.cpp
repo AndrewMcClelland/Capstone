@@ -13,7 +13,11 @@
 using namespace std;
 using namespace cv;
 
-
+struct circle_params
+{
+  Point2f center;
+  float radius;
+};
 
 
 int main(int argc, char **argv) {
@@ -30,7 +34,7 @@ int main(int argc, char **argv) {
     cout << "no device connected!" << endl;
     return -1;
   }
-  
+
   string serial = freenect2.getDefaultDeviceSerialNumber();
 
   pipeline = new libfreenect2::OpenCLPacketPipeline();
@@ -59,7 +63,7 @@ int main(int argc, char **argv) {
 
   Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2;
 
-  
+
 
    while(!kinect_shutdown)
   {
@@ -75,6 +79,8 @@ int main(int argc, char **argv) {
     // Variables for threholding and contour
     Mat thresh,thresh2, contour;
     vector<vector<Point> > contours;
+    vector<struct circle_params> circles;
+    struct circle_params max_circle;
     // Threshold the depth so only hand will be visible in certain depth window
     threshold( depthmat, thresh, 0.16f, 1, 3);
     threshold( thresh, thresh2, 0.20f, 1, 4);
@@ -87,34 +93,37 @@ int main(int argc, char **argv) {
     // a hierarchical vector of contours (vector<vector<Point>>)
     findContours(contour, contours, 0, 1);
 
-    // Iterating through the vector containing Point vectors 
-    // to find the center of the contoured circle 
+    // Iterating through the vector containing Point vectors
+    // to find the center of the contoured circle
     for (vector<vector<Point>>::iterator it=contours.begin(); it < contours.end(); it++)
     {
-
       Point2f center;
       float radius;
-      
       vector<Point> pts = *it;
       // converting contour points into CV matrix
       Mat pointsMat = Mat(pts);
-
-      // Finding a bounding circle from hand contours 
+      // Finding a bounding circle from hand contours
       minEnclosingCircle(pointsMat, center, radius);
-
-      Scalar color(255, 255, 255 );
-      // create a circle object around the hand contour
-      circle(contour, center, radius, color);
-
-    // !!! TODO: On each record the radius and center of each circle and only draw 
-    // the one with the biggest radius
-    // use the center of the of that circle as (x,y) coordinate of hand
+      //containing each enclosed contour group
+      circles.push_back(circle_params(center, radius));
     }
 
+    //Traversing through all circles to find the one with the max radius
+    for (vector<struct circle_params>::iterator it=circles.begin();it < circles.end(); it++)
+    {
+      if (*it.radius > max_circle.radius)
+        max_circle = *it;
+    }
 
-    // !!! TODO: Add gesture recognition here of the circle by checking the difference 
+    // !!! TODO: Add gesture recognition here of the circle by checking the difference
     // in radius of the circle with the previous frame
 
+    // Add a circle drawing to the depth matrix if hand is detected
+    if (max_circle.radius)
+    {
+      Scalar color(255, 255, 255 );
+      circle(contour, max_circle.center, max_circle.radius, color);
+    }
 
     imshow("Depth Matrix", contour );
 
@@ -125,8 +134,8 @@ int main(int argc, char **argv) {
 
   dev->stop();
   dev->close();
-  
 
-  delete registration; 
+
+  delete registration;
   return  0;
 }
