@@ -44,12 +44,9 @@ int main(int argc, char **argv) {
 	return -1;
   }
 
-  libfreenect2::SyncMultiFrameListener listener(  libfreenect2::Frame::Color
-						| libfreenect2::Frame::Ir
-						| libfreenect2::Frame::Depth);
+  libfreenect2::SyncMultiFrameListener listener(libfreenect2::Frame::Depth);
   libfreenect2::FrameMap frames;
 
-  dev->setColorFrameListener(&listener);
   dev->setIrAndDepthFrameListener(&listener);
 
   dev->start();
@@ -62,33 +59,67 @@ int main(int argc, char **argv) {
 
   Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2;
 
-  while(!kinect_shutdown)
+  
+
+   while(!kinect_shutdown)
   {
     listener.waitForNewFrame(frames);
 
-    libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
-    libfreenect2::Frame *ir = frames[libfreenect2::Frame::Ir];
     libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
 
-    Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
-    Mat(ir->height, ir->width, CV_32FC1, ir->data).copyTo(irmat);
     Mat(depth->height, depth->width, CV_32FC1, depth->data).copyTo(depthmat);
 
-    //imshow("rgb", rgbmat);
-    imshow("ir", irmat / 4096.0f);
-    imshow("depth", depthmat / 4096.0f);
+    // Convert the depth matrix to range [0,1] instead of [0,4096]
+    depthmat = depthmat / 4096.0f;
 
-    registration->apply(rgb, depth, &undistorted, &registered, true, &depth2rgb);
+    // Variables for threholding and contour
+    Mat thresh,thresh2, contour;
+    vector<vector<Point> > contours;
+    // Threshold the depth so only hand will be visible in certain depth window
+    threshold( depthmat, thresh, 0.16f, 1, 3);
+    threshold( thresh, thresh2, 0.20f, 1, 4);
 
-    Mat(undistorted.height, undistorted.width, CV_32FC1, undistorted.data).copyTo(depthmatUndistorted);
-    Mat(registered.height, registered.width, CV_8UC4, registered.data).copyTo(rgbd);
-    Mat(depth2rgb.height, depth2rgb.width, CV_32FC1, depth2rgb.data).copyTo(rgbd2);
+    // Convert 32 bit depth matrix into 8 bit matrix for contour identification
+    // also function multiplies the matrix by 255 increasing the range [0, 255]
+    thresh2.convertTo(contour,CV_8UC1, 255 );
+
+    // helper function finds countur in 8 bit depth matrix and returns
+    // a hierarchical vector of contours (vector<vector<Point>>)
+    findContours(contour, contours, 0, 1);
+
+    // Iterating through the vector containing Point vectors 
+    // to find the center of the contoured circle 
+    for (vector<vector<Point>>::iterator it=contours.begin(); it < contours.end(); it++)
+    {
+
+      Point2f center;
+      float radius;
+      
+      vector<Point> pts = *it;
+      // converting contour points into CV matrix
+      Mat pointsMat = Mat(pts);
+
+      // Finding a bounding circle from hand contours 
+      minEnclosingCircle(pointsMat, center, radius);
+
+      Scalar color(255, 255, 255 );
+      // create a circle object around the hand contour
+      circle(contour, center, radius, color);
+
+    // !!! TODO: On each record the radius and center of each circle and only draw 
+    // the one with the biggest radius
+    // use the center of the of that circle as (x,y) coordinate of hand
+    }
 
 
-    imshow("undistorted", depthmatUndistorted / 4096.0f);
-    imshow("registered", rgbd);
-    imshow("depth2RGB", rgbd2 / 4096.0f);
+    // !!! TODO: Add gesture recognition here of the circle by checking the difference 
+    // in radius of the circle with the previous frame
+
+
+    imshow("Depth Matrix", contour );
+
     int key = cv::waitKey(1);
+
     listener.release(frames);
   }
 
