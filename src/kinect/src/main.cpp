@@ -13,10 +13,16 @@
 using namespace std;
 using namespace cv;
 
-struct circle_params
+class circle_params
 {
+  public:
   Point2f center;
   float radius;
+
+  circle_params(Point2f newCenter = Point2f(-1, -1), float newRadius = -1) {
+    center = newCenter;
+    radius = newRadius;
+  }
 };
 
 
@@ -79,8 +85,9 @@ int main(int argc, char **argv) {
     // Variables for threholding and contour
     Mat thresh,thresh2, contour;
     vector<vector<Point> > contours;
-    vector<struct circle_params> circles;
-    struct circle_params max_circle;
+    vector<circle_params> circles;
+    circle_params max_circle;
+    max_circle.radius = 0;
     // Threshold the depth so only hand will be visible in certain depth window
     threshold( depthmat, thresh, 0.16f, 1, 3);
     threshold( thresh, thresh2, 0.20f, 1, 4);
@@ -95,6 +102,8 @@ int main(int argc, char **argv) {
 
     // Iterating through the vector containing Point vectors
     // to find the center of the contoured circle
+    float max_radius = 0;
+    Point2f max_center;
     for (vector<vector<Point>>::iterator it=contours.begin(); it < contours.end(); it++)
     {
       Point2f center;
@@ -105,15 +114,30 @@ int main(int argc, char **argv) {
       // Finding a bounding circle from hand contours
       minEnclosingCircle(pointsMat, center, radius);
       //containing each enclosed contour group
-      circles.push_back(circle_params(center, radius));
+      circle_params params = circle_params(center, radius);
+      circles.push_back(params);
+
+      // Setting params for max circle contour (the hand)
+      if(radius > max_radius) {
+        max_radius = radius;
+        max_center = center;
+      }
     }
 
-    //Traversing through all circles to find the one with the max radius
-    for (vector<struct circle_params>::iterator it=circles.begin();it < circles.end(); it++)
-    {
-      if (*it.radius > max_circle.radius)
-        max_circle = *it;
-    }
+
+    // Setting params for max circle contour (the hand)
+    max_circle.center = max_center;
+    max_circle.radius = max_radius;
+    cout <<"Center y = "<< max_center.y<<" x = "<<max_center.x<<endl;
+    // //Traversing through all circles to find the one with the max radius
+    // for (vector<struct circle_params>::iterator it=circles.begin();it < circles.end(); it++)
+    // {
+    //   if (it->radius > max_circle.radius) {
+    //     max_circle.center = it->center;
+    //     max_circle.radius = it->radius;
+        
+    //   }
+    // }
 
     // !!! TODO: Add gesture recognition here of the circle by checking the difference
     // in radius of the circle with the previous frame
