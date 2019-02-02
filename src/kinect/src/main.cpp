@@ -10,6 +10,8 @@
 #include <vector>
 #include <cmath>
 
+#define NUM_FRAMES_FINGER_AVG 100
+
 using namespace std;
 using namespace cv;
 
@@ -116,7 +118,7 @@ int main(int argc, char **argv) {
 
   Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2;
 
-
+  int curr_num_finger_frames = 0, total_count_fingers = 0, avg_num_fingers = -1;
 
    while(!kinect_shutdown) {
     listener.waitForNewFrame(frames);
@@ -226,10 +228,21 @@ int main(int argc, char **argv) {
                   cv::circle(contour, validPoints[i], 9, cv::Scalar(255, 0, 0), 2);
               }
 
-              putText(contour, to_string(validPoints.size()), Point(10,300), FONT_HERSHEY_SIMPLEX, 4,(255,255,255),2, LINE_AA);
+              // Average number of fingers over past NUM_FRAMES_FINGER_AVG frames so that we don't get spurious outputs
+              if(curr_num_finger_frames >= NUM_FRAMES_FINGER_AVG) {
+                curr_num_finger_frames = 0;
+                avg_num_fingers = round((float)total_count_fingers / (float)NUM_FRAMES_FINGER_AVG);
+                total_count_fingers = 0;
+                cout << "Number of fingers = " << avg_num_fingers << endl;
+
+              } else {
+                curr_num_finger_frames++;
+                total_count_fingers += validPoints.size();
+                putText(contour, "Num fingers: " + to_string(avg_num_fingers), Point(10,300), FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2, LINE_AA);
+              }
           }
       }
-
+    
     imshow("Depth Matrix", contour );
 
     int key = cv::waitKey(1);
