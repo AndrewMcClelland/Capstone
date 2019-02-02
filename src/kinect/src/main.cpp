@@ -13,15 +13,20 @@
 using namespace std;
 using namespace cv;
 
-class circle_params
+class CircleParams
 {
   public:
   Point2f center;
   float radius;
 
-  circle_params(Point2f newCenter = Point2f(-1, -1), float newRadius = -1) {
+  CircleParams(Point2f newCenter = Point2f(-1, -1), float newRadius = -1) {
     center = newCenter;
     radius = newRadius;
+  }
+
+  friend ostream& operator<<(ostream& os, const CircleParams &cp) {
+      os << "Centered at: [" << cp.center.x << ", " << cp.center.y << "]\tradius = " << cp.radius;
+      return os;
   }
 };
 
@@ -33,7 +38,6 @@ int main(int argc, char **argv) {
   libfreenect2::PacketPipeline *pipeline = 0;
 
   bool kinect_shutdown = false;
-
 
   if(freenect2.enumerateDevices() == 0)
   {
@@ -85,8 +89,8 @@ int main(int argc, char **argv) {
     // Variables for threholding and contour
     Mat thresh,thresh2, contour;
     vector<vector<Point> > contours;
-    vector<circle_params> circles;
-    circle_params max_circle;
+    vector<CircleParams> circles;
+    CircleParams max_circle;
     max_circle.radius = 0;
     // Threshold the depth so only hand will be visible in certain depth window
     threshold( depthmat, thresh, 0.16f, 1, 3);
@@ -114,7 +118,7 @@ int main(int argc, char **argv) {
       // Finding a bounding circle from hand contours
       minEnclosingCircle(pointsMat, center, radius);
       //containing each enclosed contour group
-      circle_params params = circle_params(center, radius);
+      CircleParams params = CircleParams(center, radius);
       circles.push_back(params);
 
       // Setting params for max circle contour (the hand)
@@ -124,20 +128,11 @@ int main(int argc, char **argv) {
       }
     }
 
-
     // Setting params for max circle contour (the hand)
     max_circle.center = max_center;
     max_circle.radius = max_radius;
-    cout <<"Center y = "<< max_center.y<<" x = "<<max_center.x<<endl;
-    // //Traversing through all circles to find the one with the max radius
-    // for (vector<struct circle_params>::iterator it=circles.begin();it < circles.end(); it++)
-    // {
-    //   if (it->radius > max_circle.radius) {
-    //     max_circle.center = it->center;
-    //     max_circle.radius = it->radius;
-        
-    //   }
-    // }
+    // cout << "Centered at: [" << max_circle.center.x << ", " << max_circle.center.y << "]\tradius = " << max_circle.radius << endl;
+    cout << max_circle << endl;
 
     // !!! TODO: Add gesture recognition here of the circle by checking the difference
     // in radius of the circle with the previous frame

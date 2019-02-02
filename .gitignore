@@ -39,3 +39,7 @@ openCV/
 
 build/
 /.metadata/
+build/kinect/bin/
+
+*.vscode
+
