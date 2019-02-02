@@ -147,7 +147,21 @@ int main(int argc, char **argv) {
 
   int curr_num_finger_frames = 0, total_count_fingers = 0, avg_num_fingers = -1;
 
-   while(!kinect_shutdown) {
+  // Values used to alter the HSV bounds of the resulting image
+  // DONT THINK THE HSV CURRENTLY WORKS BECAUSE THE INPUT FRAME IS DEPTH DATA ONLY...HAVE TO CONFIRM WITH LIPSKI
+  int minH = 0, maxH = 160, minS = 0, maxS = 40, minV = 0, maxV = 130, depthThresholdMin = 0.16f, depthThresholdMax = 0.20f;
+  const char* windowName = "Fingertip detection";
+  cv::namedWindow(windowName);
+  cv::createTrackbar("minDepthThreshold", windowName, &depthThresholdMin, 30);
+  cv::createTrackbar("depthThresholdMax", windowName, &depthThresholdMax, 30);
+  cv::createTrackbar("MinH", windowName, &minH, 180);
+  cv::createTrackbar("MaxH", windowName, &maxH, 180);
+  cv::createTrackbar("MinS", windowName, &minS, 255);
+  cv::createTrackbar("MaxS", windowName, &maxS, 255);
+  cv::createTrackbar("MinV", windowName, &minV, 255);
+  cv::createTrackbar("MaxV", windowName, &maxV, 255);
+  
+  while(!kinect_shutdown) {
     listener.waitForNewFrame(frames);
 
     libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
@@ -157,6 +171,9 @@ int main(int argc, char **argv) {
     // Convert the depth matrix to range [0,1] instead of [0,4096]
     depthmat = depthmat / 4096.0f;
 
+    // DONT THINK THE HSV CURRENTLY WORKS BECAUSE THE INPUT FRAME IS DEPTH DATA ONLY...HAVE TO CONFIRM WITH LIPSKI
+    // inRange(depthmat, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), depthmat);
+
     // Variables for threholding and contour
     Mat thresh,thresh2, contour;
     vector<vector<Point> > contours;
@@ -164,8 +181,10 @@ int main(int argc, char **argv) {
     CircleParams max_circle;
     max_circle.radius = 0;
     // Threshold the depth so only hand will be visible in certain depth window
-    threshold( depthmat, thresh, 0.16f, 1, 3);
-    threshold( thresh, thresh2, 0.20f, 1, 4);
+    threshold( depthmat, thresh, depthThresholdMin / 100.0f, 1, 3);
+    threshold( thresh, thresh2, depthThresholdMax / 100.0f, 1, 4);
+
+    cout << "thresh min = " << depthThresholdMin / 100.0f << " max = " << depthThresholdMax / 100.0f << endl;
 
     // Convert 32 bit depth matrix into 8 bit matrix for contour identification
     // also function multiplies the matrix by 255 increasing the range [0, 255]
@@ -219,7 +238,7 @@ int main(int argc, char **argv) {
     // cv::imshow("Find contours", contour);
 
     // Add a circle drawing to the depth matrix if hand is detected
-    circle(contour, max_circle.center, max_circle.radius, cv::Scalar(255, 255, 255));
+    // circle(contour, max_circle.center, max_circle.radius, cv::Scalar(255, 255, 255));
 
     if (!contours.empty())
       {
