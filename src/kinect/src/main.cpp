@@ -76,6 +76,33 @@ float innerAngle(float px1, float py1, float px2, float py2, float cx1, float cy
   return A;
 }
 
+bool fingerToGesture(const int numFingers) {
+  switch (numFingers) {
+    case 0:
+      cout << "Executing num fingers case 0" << endl;
+      return true;
+    case 1:
+      cout << "Executing num fingers case 1" << endl;
+      return true;
+    case 2:
+      cout << "Executing num fingers case 2" << endl;
+      return true;
+    case 3:
+      cout << "Executing num fingers case 3" << endl;
+      return true;
+    case 4:
+      cout << "Executing num fingers case 4" << endl;
+      return true;
+    case 5:
+      cout << "Executing num fingers case 5" << endl;
+      return true;
+    default:
+      cout << "Error!!! Num fingers = " << numFingers << endl;
+      return false;
+    
+  }
+}
+
 int main(int argc, char **argv) {
 
   libfreenect2::Freenect2 freenect2;
@@ -233,7 +260,7 @@ int main(int argc, char **argv) {
                 curr_num_finger_frames = 0;
                 avg_num_fingers = round((float)total_count_fingers / (float)NUM_FRAMES_FINGER_AVG);
                 total_count_fingers = 0;
-                cout << "Number of fingers = " << avg_num_fingers << endl;
+                cout << "Result of converting # fingers (" << avg_num_fingers << ") to gestures:" << fingerToGesture(avg_num_fingers) << endl;
 
               } else {
                 curr_num_finger_frames++;
