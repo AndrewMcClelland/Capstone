@@ -30,6 +30,49 @@ class CircleParams
   }
 };
 
+float innerAngle(float px1, float py1, float px2, float py2, float cx1, float cy1)
+{
+
+  float dist1 = std::sqrt(  (px1-cx1)*(px1-cx1) + (py1-cy1)*(py1-cy1) );
+  float dist2 = std::sqrt(  (px2-cx1)*(px2-cx1) + (py2-cy1)*(py2-cy1) );
+
+  float Ax, Ay;
+  float Bx, By;
+  float Cx, Cy;
+
+  //find closest point to C  
+  //printf("dist = %lf %lf\n", dist1, dist2);  
+
+  Cx = cx1;
+  Cy = cy1;
+  if(dist1 < dist2)
+  {
+    Bx = px1;
+    By = py1;
+    Ax = px2;
+    Ay = py2;
+
+
+  }else{
+    Bx = px2;
+    By = py2;
+    Ax = px1;
+    Ay = py1;
+  }
+
+
+  float Q1 = Cx - Ax;
+  float Q2 = Cy - Ay;
+  float P1 = Bx - Ax;
+  float P2 = By - Ay;
+
+
+  float A = std::acos( (P1*Q1 + P2*Q2) / ( std::sqrt(P1*P1+P2*P2) * std::sqrt(Q1*Q1+Q2*Q2) ) );
+
+  A = A*180/CV_PI;
+
+  return A;
+}
 
 int main(int argc, char **argv) {
 
@@ -75,8 +118,7 @@ int main(int argc, char **argv) {
 
 
 
-   while(!kinect_shutdown)
-  {
+   while(!kinect_shutdown) {
     listener.waitForNewFrame(frames);
 
     libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
@@ -102,17 +144,22 @@ int main(int argc, char **argv) {
 
     // helper function finds countur in 8 bit depth matrix and returns
     // a hierarchical vector of contours (vector<vector<Point>>)
-    findContours(contour, contours, 0, 1);
+    
+    // findContours(contour, contours, 0, 1);
+    std::vector<cv::Vec4i> hierarchy;
+    findContours(contour, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
     // Iterating through the vector containing Point vectors
     // to find the center of the contoured circle
-    float max_radius = 0;
+
+    size_t largest_contour = 0;
     Point2f max_center;
-    for (vector<vector<Point>>::iterator it=contours.begin(); it < contours.end(); it++)
+    float max_radius = -1;
+    for (size_t i = 1; i < contours.size(); i++)
     {
       Point2f center;
       float radius;
-      vector<Point> pts = *it;
+      vector<Point> pts = contours.at(i);
       // converting contour points into CV matrix
       Mat pointsMat = Mat(pts);
       // Finding a bounding circle from hand contours
@@ -121,28 +168,67 @@ int main(int argc, char **argv) {
       CircleParams params = CircleParams(center, radius);
       circles.push_back(params);
 
-      // Setting params for max circle contour (the hand)
+      // Setting x,y and radius for max circle contour (the hand)
       if(radius > max_radius) {
         max_radius = radius;
         max_center = center;
+      }
+
+      // Getting actual contour of the hand
+      if (cv::contourArea(contours[i]) > cv::contourArea(contours[largest_contour])) {
+        largest_contour = i;
       }
     }
 
     // Setting params for max circle contour (the hand)
     max_circle.center = max_center;
     max_circle.radius = max_radius;
-    // cout << "Centered at: [" << max_circle.center.x << ", " << max_circle.center.y << "]\tradius = " << max_circle.radius << endl;
-    cout << max_circle << endl;
+    // cout << max_circle << endl;
 
-    // !!! TODO: Add gesture recognition here of the circle by checking the difference
-    // in radius of the circle with the previous frame
+    // Draw contour outline of hand
+    cv::drawContours(contour, contours, largest_contour, cv::Scalar(255, 0, 0), 1);
+    // cv::imshow("Find contours", contour);
 
     // Add a circle drawing to the depth matrix if hand is detected
-    if (max_circle.radius)
-    {
-      Scalar color(255, 255, 255 );
-      circle(contour, max_circle.center, max_circle.radius, color);
-    }
+    circle(contour, max_circle.center, max_circle.radius, cv::Scalar(255, 255, 255));
+
+    if (!contours.empty())
+      {
+          std::vector<std::vector<cv::Point> > hull(1);
+          cv::convexHull(cv::Mat(contours[largest_contour]), hull[0], false);
+          // cv::drawContours(contour, hull, 0, cv::Scalar(255, 0, 0), 3);
+          
+          if (hull[0].size() > 2)
+          {
+              std::vector<int> hullIndexes;
+              cv::convexHull(cv::Mat(contours[largest_contour]), hullIndexes, true);
+              std::vector<cv::Vec4i> convexityDefects;
+              cv::convexityDefects(cv::Mat(contours[largest_contour]), hullIndexes, convexityDefects);
+              cv::Rect boundingBox = cv::boundingRect(hull[0]);
+              // cv::rectangle(contour, boundingBox, cv::Scalar(255, 0, 0));
+              cv::Point center = cv::Point(boundingBox.x + boundingBox.width / 2, boundingBox.y + boundingBox.height / 2);
+              std::vector<cv::Point> validPoints;
+              for (size_t i = 0; i < convexityDefects.size(); i++)
+              {
+                  cv::Point p1 = contours[largest_contour][convexityDefects[i][0]];
+                  cv::Point p2 = contours[largest_contour][convexityDefects[i][1]];
+                  cv::Point p3 = contours[largest_contour][convexityDefects[i][2]];
+                  double angle = std::atan2(center.y - p1.y, center.x - p1.x) * 180 / CV_PI;
+                  double inAngle = innerAngle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+                  double length = std::sqrt(std::pow(p1.x - p3.x, 2) + std::pow(p1.y - p3.y, 2));
+                  if (angle > -30 && angle < 160 && std::abs(inAngle) > 20 && std::abs(inAngle) < 120 && length > 0.1 * boundingBox.height)
+                  {
+                      validPoints.push_back(p1);
+                  }
+              }
+              for (size_t i = 0; i < validPoints.size(); i++)
+              {
+                  cv::circle(contour, validPoints[i], 9, cv::Scalar(255, 0, 0), 2);
+              }
+
+              putText(contour, to_string(validPoints.size()), Point(10,300), FONT_HERSHEY_SIMPLEX, 4,(255,255,255),2, LINE_AA);
+          }
+      }
 
     imshow("Depth Matrix", contour );
 
