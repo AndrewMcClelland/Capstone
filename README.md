@@ -53,3 +53,9 @@ To build:
   * _Currently, `cmake` will only accept a program named `./src/kinect/src/main.cpp` and creates output binary as `./build/main` ... (will fix this later)_
 * Navigate to `./build` and run `cmake .. && make`
 * Output binary will be `./build/main`
+
+## Gantry
+* Turn on lower left power switch of controller box
+* On controller buttons, hit ~ESC~ then ~F1~ to get it working for input from computer
+* Change Gantry source code to the usb that the Gantry is connected to on computer
+
