@@ -56,6 +56,6 @@ To build:
 
 ## Gantry
 * Turn on lower left power switch of controller box
-* On controller buttons, hit ~ESC~ then ~F1~ to get it working for input from computer
+* On controller buttons, hit `ESC` then `F1` to get it working for input from computer
 * Change Gantry source code to the usb that the Gantry is connected to on computer
 
