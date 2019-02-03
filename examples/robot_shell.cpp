@@ -108,7 +108,7 @@ COMMAND commands[] = {
  * Global variables
  * * * * * * * * * */
 
-ofstream Log("./build/shell.log");	// Log messages go into this file.
+ofstream Log("shell.log");	// Log messages go into this file.
 // *** Robot robot;		// Robot object
 string cmdline;			// Holds current command-line input from user
 list<string> ComplMatches;	// Queue of current matches in the completion algorithm

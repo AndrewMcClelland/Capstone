@@ -53,8 +53,8 @@ public:
 	
 	// Constructor
 	Robot (
-		const std::string& _serialport	= "/dev/ttyS1",
-		const std::string& _limit_file	= "/var/qpool/robot_limits.dat",
+		const std::string& _serialport	= "/dev/ttyUSB0",
+		const std::string& _limit_file	= "/home/rcvlab/Robot/robot_limits.dat",
 		std::ostream& _log		= std::cerr);
 
 	// Destructor

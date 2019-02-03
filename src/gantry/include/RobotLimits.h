@@ -9,7 +9,7 @@
 // These are the internal maximum positional limits. Any limits in the limit file must be within these.
 // Make sure that all MAX-components have a numeric value higher than their corresponding
 // MIN-components
-//						 X      Y     Z    J4   J5   J6
+//						                    X      Y     Z    J4   J5   J6
 #define _DEFAULT_MIN		RobotPosition(   0, -1795, -290, -180, -35, -90)
 #define _DEFAULT_MAX		RobotPosition(3000,     0,    0,  180,  35, -90)
 
@@ -30,7 +30,7 @@ public:
 	// Constructor with default file name containing limits.
 	// Pass an empty string to get hardcoded default limits.
 	RobotLimits (
-		const std::string& limit_file = "/var/qpool/robot_limits.dat",
+		const std::string& limit_file = "home/rcvlab/Robot/robot_limits.dat",
 		const double& _fudge = 0.05);
 
 	// Accessor methods

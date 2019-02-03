@@ -29,7 +29,7 @@ public:
 	
 	// Constructor
 	RobotController (
-		const std::string& _serialport	= "/dev/ttyS1",
+		const std::string& _serialport	= "/dev/ttyUSB0",
 		std::ostream& _log		= std::cerr);
 
 	// Destructor
