@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 
 	// Initialize robot
 	ofstream robot_log("robot.log");
-	Robot robot("/dev/ttyUSB0", "home/rcvlab/Robot/robot_limits.dat", robot_log);
+	Robot robot("/dev/ttyUSB0", "/home/gantryrobot/Desktop/Capstone/src/gantry/robot_limits.dat", robot_log);
 
 	// Move robot out of the way
 	robot.home();

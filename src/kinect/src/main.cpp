@@ -6,6 +6,8 @@
 
 #include  <opencv2/opencv.hpp>
 
+#include "../include/kinect_to_gantry.h"
+
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -161,6 +163,17 @@ int main(int argc, char **argv) {
   cv::createTrackbar("MinV", windowName, &minV, 255);
   cv::createTrackbar("MaxV", windowName, &maxV, 255);
   
+  // while(!kinect_shutdown) {
+  //   listener.waitForNewFrame(frames);
+
+  //   libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
+  //   Mat(rgb->height, rgb->width, CV_32FC1, rgb->data).copyTo(depthmat);
+  //   cv::Mat hsv;
+  //   cv::cvtColor(depthmat, hsv, COLOR_BGR2HSV);
+
+  //   imshow("temp", hsv);
+  // }
+
   while(!kinect_shutdown) {
     listener.waitForNewFrame(frames);
 
