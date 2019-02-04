@@ -6,7 +6,7 @@
 
 #include  <opencv2/opencv.hpp>
 
-#include "../include/kinect_to_gantry.h"
+// #include "../include/kinect_to_gantry.h"
 
 #include <iostream>
 #include <vector>
@@ -78,31 +78,33 @@ float innerAngle(float px1, float py1, float px2, float py2, float cx1, float cy
   return A;
 }
 
-bool fingerToGesture(const int numFingers) {
-  switch (numFingers) {
-    case 0:
-      cout << "Executing num fingers case 0" << endl;
-      return true;
-    case 1:
-      cout << "Executing num fingers case 1" << endl;
-      return true;
-    case 2:
-      cout << "Executing num fingers case 2" << endl;
-      return true;
-    case 3:
-      cout << "Executing num fingers case 3" << endl;
-      return true;
-    case 4:
-      cout << "Executing num fingers case 4" << endl;
-      return true;
-    case 5:
-      cout << "Executing num fingers case 5" << endl;
-      return true;
-    default:
-      cout << "Error!!! Num fingers = " << numFingers << endl;
-      return false;
+bool fingerToGesture(const int numFingers, Point2f& center) {
+  // switch (numFingers) {
+  //   case 0:
+  //     cout << "Executing num fingers case 0" << endl;
+  //     return true;
+  //   case 1:
+  //     cout << "Executing num fingers case 1" << endl;
+  //     return true;
+  //   case 2:
+  //     cout << "Executing num fingers case 2" << endl;
+  //     return true;
+  //   case 3:
+  //     cout << "Executing num fingers case 3" << endl;
+  //     return true;
+  //   case 4:
+  //     cout << "Executing num fingers case 4" << endl;
+  //     return true;
+  //   case 5:
+  //     cout << "Executing num fingers case 5" << endl;
+  //     return true;
+  //   default:
+  //     cout << "Error!!! Num fingers = " << numFingers << endl;
+  //     return false;
     
-  }
+  // }
+
+  cout << "moveto " + to_string((int)center.x) + " " + to_string((int)center.y) + " 0 180 35 -90" << endl;
 }
 
 int main(int argc, char **argv) {
@@ -110,6 +112,9 @@ int main(int argc, char **argv) {
   libfreenect2::Freenect2 freenect2;
   libfreenect2::Freenect2Device *dev = 0;
   libfreenect2::PacketPipeline *pipeline = 0;
+
+  // Suppressing output from the libfreenect2 logger (comment it out to make it log info to output)
+  libfreenect2::setGlobalLogger(NULL);
 
   bool kinect_shutdown = false;
 
@@ -182,7 +187,7 @@ int main(int argc, char **argv) {
     libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
 
     Mat(depth->height, depth->width, CV_32FC1, depth->data).copyTo(depthmat);
-    Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbMat);
+    Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
     // Convert the depth matrix to range [0,1] instead of [0,4096]
     depthmat = depthmat / 4096.0f;
 
@@ -199,7 +204,7 @@ int main(int argc, char **argv) {
     threshold( depthmat, thresh, depthThresholdMin / 100.0f, 1, 3);
     threshold( thresh, thresh2, depthThresholdMax / 100.0f, 1, 4);
 
-    cout << "thresh min = " << depthThresholdMin / 100.0f << " max = " << depthThresholdMax / 100.0f << endl;
+    // cout << "thresh min = " << depthThresholdMin / 100.0f << " max = " << depthThresholdMax / 100.0f << endl;
 
     // Convert 32 bit depth matrix into 8 bit matrix for contour identification
     // also function multiplies the matrix by 255 increasing the range [0, 255]
@@ -294,7 +299,8 @@ int main(int argc, char **argv) {
                 curr_num_finger_frames = 0;
                 avg_num_fingers = round((float)total_count_fingers / (float)NUM_FRAMES_FINGER_AVG);
                 total_count_fingers = 0;
-                cout << "Result of converting # fingers (" << avg_num_fingers << ") to gestures:" << fingerToGesture(avg_num_fingers) << endl;
+                fingerToGesture(avg_num_fingers, max_circle.center);
+                // cout << "Result of converting # fingers (" << avg_num_fingers << ") to gestures:" << fingerToGesture(avg_num_fingers) << endl;
 
               } else {
                 curr_num_finger_frames++;
