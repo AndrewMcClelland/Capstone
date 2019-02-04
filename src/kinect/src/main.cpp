@@ -132,10 +132,11 @@ int main(int argc, char **argv) {
 	return -1;
   }
 
-  libfreenect2::SyncMultiFrameListener listener(libfreenect2::Frame::Depth);
+  libfreenect2::SyncMultiFrameListener listener(libfreenect2::Frame::Color | libfreenect2::Frame::Depth );
   libfreenect2::FrameMap frames;
 
   dev->setIrAndDepthFrameListener(&listener);
+  dev->setColorFrameListener(&listener);
 
   dev->start();
 
@@ -166,7 +167,7 @@ int main(int argc, char **argv) {
   // while(!kinect_shutdown) {
   //   listener.waitForNewFrame(frames);
 
-  //   libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
+  //   
   //   Mat(rgb->height, rgb->width, CV_32FC1, rgb->data).copyTo(depthmat);
   //   cv::Mat hsv;
   //   cv::cvtColor(depthmat, hsv, COLOR_BGR2HSV);
@@ -178,9 +179,10 @@ int main(int argc, char **argv) {
     listener.waitForNewFrame(frames);
 
     libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
+    libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
 
     Mat(depth->height, depth->width, CV_32FC1, depth->data).copyTo(depthmat);
-
+    Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbMat);
     // Convert the depth matrix to range [0,1] instead of [0,4096]
     depthmat = depthmat / 4096.0f;
 
