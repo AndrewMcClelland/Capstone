@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
   libfreenect2::Registration* registration = new libfreenect2::Registration(dev->getIrCameraParams(), dev->getColorCameraParams());
   libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4), depth2rgb(1920, 1080 + 2, 4);
 
-  Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2;
+  Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2, hsv;
 
   int curr_num_finger_frames = 0, total_count_fingers = 0;
   float avg_num_fingers = -1, sq_sum;
@@ -162,32 +162,33 @@ int main(int argc, char **argv) {
   // Values used to alter the HSV bounds of the resulting image
   // DONT THINK THE HSV CURRENTLY WORKS BECAUSE THE INPUT FRAME IS DEPTH DATA ONLY...HAVE TO CONFIRM WITH LIPSKI
   int minH = 122, maxH = 180, minS = 27, maxS = 74, minV = 118, maxV = 198, depthThresholdMin = 0.16f, depthThresholdMax = 0.20f;
-  // const char* windowName = "Fingertip detection";
-  // cv::namedWindow(windowName);
+  const char* windowName = "Fingertip detection";
+  cv::namedWindow(windowName);
+  cv::createTrackbar("MinH", windowName, &minH, 180);
+  cv::createTrackbar("MaxH", windowName, &maxH, 180);
+  cv::createTrackbar("MinS", windowName, &minS, 255);
+  cv::createTrackbar("MaxS", windowName, &maxS, 255);
+  cv::createTrackbar("MinV", windowName, &minV, 255);
+  cv::createTrackbar("MaxV", windowName, &maxV, 255);
   // cv::createTrackbar("minDepthThreshold", windowName, &depthThresholdMin, 30);
   // cv::createTrackbar("depthThresholdMax", windowName, &depthThresholdMax, 30);
-  // cv::createTrackbar("MinH", windowName, &minH, 180);
-  // cv::createTrackbar("MaxH", windowName, &maxH, 180);
-  // cv::createTrackbar("MinS", windowName, &minS, 255);
-  // cv::createTrackbar("MaxS", windowName, &maxS, 255);
-  // cv::createTrackbar("MinV", windowName, &minV, 255);
-  // cv::createTrackbar("MaxV", windowName, &maxV, 255);
+
   
-  while(!kinect_shutdown) {
-    listener.waitForNewFrame(frames);
-    libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
-    Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
-    cv::Mat hsv;
-    cv::cvtColor(rgbmat, hsv, COLOR_BGR2HSV);
-    // cout << "Colour loop" << endl;
-    cv::inRange(hsv, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsv);
-    // cout << minH << endl;
+  // while(!kinect_shutdown) {
+  //   listener.waitForNewFrame(frames);
+  //   libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
+  //   Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
+  //   cv::Mat hsv;
+  //   cv::cvtColor(rgbmat, hsv, COLOR_BGR2HSV);
+  //   // cout << "Colour loop" << endl;
+  //   cv::inRange(hsv, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsv);
+  //   // cout << minH << endl;
 
-    imshow("temp", hsv);
-    int key = cv::waitKey(1);
-    listener.release(frames);
+  //   imshow("temp", hsv);
+  //   int key = cv::waitKey(1);
+  //   listener.release(frames);
 
-  }
+  // }
 
   while(!kinect_shutdown) {
     listener.waitForNewFrame(frames);
@@ -198,6 +199,10 @@ int main(int argc, char **argv) {
     Mat(depth->height, depth->width, CV_32FC1, depth->data).copyTo(depthmat);
     Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
     
+    // Convert RGB vals to HSV and limit frames to be within HSV bounds
+    cv::cvtColor(rgbmat, hsv, COLOR_BGR2HSV);
+    cv::inRange(hsv, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsv);
+
     // Convert the depth matrix to range [0,1] instead of [0,4096]
     depthmat = depthmat / 4096.0f;
 
@@ -220,7 +225,8 @@ int main(int argc, char **argv) {
 
     // Convert 32 bit depth matrix into 8 bit matrix for contour identification
     // also function multiplies the matrix by 255 increasing the range [0, 255]
-    thresh2.convertTo(contour,CV_8UC1, 255 );
+    // thresh2.convertTo(contour,CV_8UC1, 255 );
+    hsv.convertTo(contour,CV_8UC1, 255 );
 
     // helper function finds countur in 8 bit depth matrix and returns
     // a hierarchical vector of contours (vector<vector<Point>>)
