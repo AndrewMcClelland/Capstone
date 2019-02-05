@@ -11,8 +11,10 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <numeric>  // for inner_product
 
 #define NUM_FRAMES_FINGER_AVG 100
+#define NUM_FINGERS_STD_DEV 0.5
 
 using namespace std;
 using namespace cv;
@@ -153,7 +155,9 @@ int main(int argc, char **argv) {
 
   Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2;
 
-  int curr_num_finger_frames = 0, total_count_fingers = 0, avg_num_fingers = -1;
+  int curr_num_finger_frames = 0, total_count_fingers = 0;
+  float avg_num_fingers = -1, sq_sum;
+  vector<double> fingers_in_frame;
 
   // Values used to alter the HSV bounds of the resulting image
   // DONT THINK THE HSV CURRENTLY WORKS BECAUSE THE INPUT FRAME IS DEPTH DATA ONLY...HAVE TO CONFIRM WITH LIPSKI
@@ -298,15 +302,30 @@ int main(int argc, char **argv) {
 
               // Average number of fingers over past NUM_FRAMES_FINGER_AVG frames so that we don't get spurious outputs
               if(curr_num_finger_frames >= NUM_FRAMES_FINGER_AVG) {
+                // Calculating std dev of recorded fingers in last NUM_FRAMES_FINGER_AVG frames to see if it was stable enough to call appropriate Gantry function
+                avg_num_fingers = (float)total_count_fingers / (float)NUM_FRAMES_FINGER_AVG;
+                double finger_sq_sum = inner_product(fingers_in_frame.begin(), fingers_in_frame.end(), fingers_in_frame.begin(), 0.0);
+                double finger_stdev = sqrt(finger_sq_sum / NUM_FRAMES_FINGER_AVG - avg_num_fingers * avg_num_fingers);
+                
+                cout << "Standard dev of fingers = " << finger_stdev << endl;
+                
+                // Call Gantry function only if the std dev is low enough
+                if(finger_stdev < NUM_FINGERS_STD_DEV) {
+                  cout << "Avg number of fingers = " << round(avg_num_fingers) << endl;
+                  // fingerToGesture(round(avg_num_fingers), max_circle.center);
+                }
+
+                // Reset all counters/variables for next block of NUM_FRAMES_FINGER_AVG frames regardless
                 curr_num_finger_frames = 0;
-                avg_num_fingers = round((float)total_count_fingers / (float)NUM_FRAMES_FINGER_AVG);
                 total_count_fingers = 0;
-                fingerToGesture(avg_num_fingers, max_circle.center);
+                fingers_in_frame.clear();
                 // cout << "Result of converting # fingers (" << avg_num_fingers << ") to gestures:" << fingerToGesture(avg_num_fingers) << endl;
 
               } else {
                 curr_num_finger_frames++;
                 total_count_fingers += validPoints.size();
+                fingers_in_frame.push_back(validPoints.size());
+                
                 putText(contour, "Num fingers: " + to_string(avg_num_fingers), Point(10,300), FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2, LINE_AA);
               }
           }
