@@ -145,8 +145,8 @@ int main(int argc, char **argv) {
 
   dev->start();
 
-  cout << "device serial: " << dev->getSerialNumber() << endl;
-  cout << "device firmware: " << dev->getFirmwareVersion() << endl;
+  // cout << "device serial: " << dev->getSerialNumber() << endl;
+  // cout << "device firmware: " << dev->getFirmwareVersion() << endl;
 
   libfreenect2::Registration* registration = new libfreenect2::Registration(dev->getIrCameraParams(), dev->getColorCameraParams());
   libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4), depth2rgb(1920, 1080 + 2, 4);
@@ -158,16 +158,16 @@ int main(int argc, char **argv) {
   // Values used to alter the HSV bounds of the resulting image
   // DONT THINK THE HSV CURRENTLY WORKS BECAUSE THE INPUT FRAME IS DEPTH DATA ONLY...HAVE TO CONFIRM WITH LIPSKI
   int minH = 0, maxH = 160, minS = 0, maxS = 40, minV = 0, maxV = 130, depthThresholdMin = 0.16f, depthThresholdMax = 0.20f;
-  const char* windowName = "Fingertip detection";
-  cv::namedWindow(windowName);
-  cv::createTrackbar("minDepthThreshold", windowName, &depthThresholdMin, 30);
-  cv::createTrackbar("depthThresholdMax", windowName, &depthThresholdMax, 30);
-  cv::createTrackbar("MinH", windowName, &minH, 180);
-  cv::createTrackbar("MaxH", windowName, &maxH, 180);
-  cv::createTrackbar("MinS", windowName, &minS, 255);
-  cv::createTrackbar("MaxS", windowName, &maxS, 255);
-  cv::createTrackbar("MinV", windowName, &minV, 255);
-  cv::createTrackbar("MaxV", windowName, &maxV, 255);
+  // const char* windowName = "Fingertip detection";
+  // cv::namedWindow(windowName);
+  // cv::createTrackbar("minDepthThreshold", windowName, &depthThresholdMin, 30);
+  // cv::createTrackbar("depthThresholdMax", windowName, &depthThresholdMax, 30);
+  // cv::createTrackbar("MinH", windowName, &minH, 180);
+  // cv::createTrackbar("MaxH", windowName, &maxH, 180);
+  // cv::createTrackbar("MinS", windowName, &minS, 255);
+  // cv::createTrackbar("MaxS", windowName, &maxS, 255);
+  // cv::createTrackbar("MinV", windowName, &minV, 255);
+  // cv::createTrackbar("MaxV", windowName, &maxV, 255);
   
   // while(!kinect_shutdown) {
   //   listener.waitForNewFrame(frames);
@@ -201,8 +201,10 @@ int main(int argc, char **argv) {
     CircleParams max_circle;
     max_circle.radius = 0;
     // Threshold the depth so only hand will be visible in certain depth window
-    threshold( depthmat, thresh, depthThresholdMin / 100.0f, 1, 3);
-    threshold( thresh, thresh2, depthThresholdMax / 100.0f, 1, 4);
+    // threshold( depthmat, thresh, depthThresholdMin / 100.0f, 1, 3);
+    // threshold( thresh, thresh2, depthThresholdMax / 100.0f, 1, 4);
+    threshold( depthmat, thresh, 0.16f, 1, 3);
+    threshold( thresh, thresh2, 0.18f, 1, 4);
 
     // cout << "thresh min = " << depthThresholdMin / 100.0f << " max = " << depthThresholdMax / 100.0f << endl;
 

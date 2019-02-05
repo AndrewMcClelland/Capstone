@@ -114,7 +114,7 @@ vector<COMMAND> commands = {
 
 ofstream Log("shell.log");	// Log messages go into this file.
 ofstream robot_log("robot.log");
-// Robot robot("/dev/ttyUSB0", "home/rcvlab/Robot/robot_limits.dat", robot_log);		// Robot object
+Robot robot("/dev/ttyUSB0", "/home/gantryrobot/Desktop/Capstone/src/gantry/robot_limits.dat", robot_log);
 string cmdline;			// Holds current command-line input from user
 list<string> ComplMatches;	// Queue of current matches in the completion algorithm
 string Prompt = ">>> ";		// User prompt
@@ -239,18 +239,20 @@ void execute (const string& cmd, list<string>& args) {
  * * * * * * * * * */
 
 void cmdMoveTo (list<string>& args) {
-	if(args.size() != 6) {
-		cerr << "ERROR: Require 6 arguments for moveTo() command in format [x,y,z,f4,f5,f6]... entered " << args.size() << " commands....exiting!!!" << endl;
+	if(args.size() != 3) {
+		cerr << "ERROR: Require 3 arguments for moveTo() command in format [x,y,z]... entered " << args.size() << " commands....exiting!!!" << endl;
 		return;
 	}
-	cout << "Moving Gantry robot to [x,y,z,f4,f5,f6]..." << endl;
+
 	vector<int> moveToParams;
 	for(string currArg : args) {
-		cout << currArg << endl;
 		moveToParams.push_back(stoi(currArg));
 	}
-
-	// robot.moveTo(RobotPosition(moveToParams.at(0), moveToParams.at(1), moveToParams.at(2), moveToParams.at(3), moveToParams.at(4), moveToParams.at(5)), 1.0);
+	
+	// robot.home();
+	// robot.moveTo(RobotPosition(0, 0, 0, 180, 35, -90), 1.0);
+	robot.moveTo(RobotPosition(moveToParams.at(0), moveToParams.at(1), moveToParams.at(2), 180, 35, -90), 1.0);
+	cout << "Robot is done moving to (" << moveToParams.at(0) << ", " << moveToParams.at(1) << ", " << moveToParams.at(2) << ", 180, 35, -90)" << endl;
 }
 
 void cmdHelp (list<string>& args) {
