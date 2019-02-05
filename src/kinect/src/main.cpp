@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
 
   // Values used to alter the HSV bounds of the resulting image
   // DONT THINK THE HSV CURRENTLY WORKS BECAUSE THE INPUT FRAME IS DEPTH DATA ONLY...HAVE TO CONFIRM WITH LIPSKI
-  int minH = 0, maxH = 160, minS = 0, maxS = 40, minV = 0, maxV = 130, depthThresholdMin = 0.16f, depthThresholdMax = 0.20f;
+  int minH = 122, maxH = 180, minS = 27, maxS = 74, minV = 118, maxV = 198, depthThresholdMin = 0.16f, depthThresholdMax = 0.20f;
   // const char* windowName = "Fingertip detection";
   // cv::namedWindow(windowName);
   // cv::createTrackbar("minDepthThreshold", windowName, &depthThresholdMin, 30);
@@ -173,16 +173,21 @@ int main(int argc, char **argv) {
   // cv::createTrackbar("MinV", windowName, &minV, 255);
   // cv::createTrackbar("MaxV", windowName, &maxV, 255);
   
-  // while(!kinect_shutdown) {
-  //   listener.waitForNewFrame(frames);
+  while(!kinect_shutdown) {
+    listener.waitForNewFrame(frames);
+    libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
+    Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
+    cv::Mat hsv;
+    cv::cvtColor(rgbmat, hsv, COLOR_BGR2HSV);
+    // cout << "Colour loop" << endl;
+    cv::inRange(hsv, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsv);
+    // cout << minH << endl;
 
-  //   
-  //   Mat(rgb->height, rgb->width, CV_32FC1, rgb->data).copyTo(depthmat);
-  //   cv::Mat hsv;
-  //   cv::cvtColor(depthmat, hsv, COLOR_BGR2HSV);
+    imshow("temp", hsv);
+    int key = cv::waitKey(1);
+    listener.release(frames);
 
-  //   imshow("temp", hsv);
-  // }
+  }
 
   while(!kinect_shutdown) {
     listener.waitForNewFrame(frames);
@@ -192,6 +197,7 @@ int main(int argc, char **argv) {
 
     Mat(depth->height, depth->width, CV_32FC1, depth->data).copyTo(depthmat);
     Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
+    
     // Convert the depth matrix to range [0,1] instead of [0,4096]
     depthmat = depthmat / 4096.0f;
 
@@ -308,7 +314,7 @@ int main(int argc, char **argv) {
                 double finger_stdev = sqrt(finger_sq_sum / NUM_FRAMES_FINGER_AVG - avg_num_fingers * avg_num_fingers);
                 
                 cout << "Standard dev of fingers = " << finger_stdev << endl;
-                
+
                 // Call Gantry function only if the std dev is low enough
                 if(finger_stdev < NUM_FINGERS_STD_DEV) {
                   cout << "Avg number of fingers = " << round(avg_num_fingers) << endl;
