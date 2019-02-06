@@ -134,14 +134,14 @@ bool fingerToGesture(const int numFingers, const Point2f& center, const int kine
   y_gantry = y_gantry < GANTRY_MIN_Y ? GANTRY_MIN_Y : y_gantry;
   y_gantry = y_gantry > GANTRY_MAX_Y ? GANTRY_MAX_Y : y_gantry;
 
+  cout << "moveto " + to_string(x_gantry) + " " + to_string(y_gantry) + " 0 180 35 -90" << endl;
+
   // int min_x_gantry = 0 * kinect_to_gantry_x + GANTRY_MIN_X;
   // int max_x_gantry = kinectNumColumns * kinect_to_gantry_x + GANTRY_MIN_X;
   // int min_y_gantry = 0 * kinect_to_gantry_x + GANTRY_MIN_Y;
   // int max_y_gantry = kinectNumRows * kinect_to_gantry_x + GANTRY_MIN_Y;
 
   // printf("Min x gantry = %d, max x gantry = %d, min y gantry = %d, max y gantry = %d\n", min_x_gantry, max_x_gantry, min_y_gantry, max_y_gantry);
-
-  cout << "moveto " + to_string(x_gantry) + " " + to_string(y_gantry) + " 0 180 35 -90" << endl;
 }
 
 int main(int argc, char **argv) {
@@ -205,25 +205,8 @@ int main(int argc, char **argv) {
   cv::createTrackbar("MaxS", windowName, &maxS, 255);
   cv::createTrackbar("MinV", windowName, &minV, 255);
   cv::createTrackbar("MaxV", windowName, &maxV, 255);
-  // cv::createTrackbar("minDepthThreshold", windowName, &depthThresholdMin, 30);
-  // cv::createTrackbar("depthThresholdMax", windowName, &depthThresholdMax, 30);
-
-  
-  // while(!kinect_shutdown) {
-  //   listener.waitForNewFrame(frames);
-  //   libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
-  //   Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
-  //   cv::Mat hsv;
-  //   cv::cvtColor(rgbmat, hsv, COLOR_BGR2HSV);
-  //   // cout << "Colour loop" << endl;
-  //   cv::inRange(hsv, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsv);
-  //   // cout << minH << endl;
-
-  //   imshow("temp", hsv);
-  //   int key = cv::waitKey(1);
-  //   listener.release(frames);
-
-  // }
+  cv::createTrackbar("minDepthThreshold", windowName, &depthThresholdMin, 30);
+  cv::createTrackbar("depthThresholdMax", windowName, &depthThresholdMax, 30);
 
   while(!kinect_shutdown) {
     listener.waitForNewFrame(frames);
@@ -241,26 +224,21 @@ int main(int argc, char **argv) {
     // Convert the depth matrix to range [0,1] instead of [0,4096]
     depthmat = depthmat / 4096.0f;
 
-    // DONT THINK THE HSV CURRENTLY WORKS BECAUSE THE INPUT FRAME IS DEPTH DATA ONLY...HAVE TO CONFIRM WITH LIPSKI
-    // inRange(depthmat, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), depthmat);
-
     // Variables for threholding and contour
     Mat thresh,thresh2, contour;
     vector<vector<Point> > contours;
     vector<CircleParams> circles;
     CircleParams max_circle;
     max_circle.radius = 0;
+
     // Threshold the depth so only hand will be visible in certain depth window
     // threshold( depthmat, thresh, depthThresholdMin / 100.0f, 1, 3);
     // threshold( thresh, thresh2, depthThresholdMax / 100.0f, 1, 4);
     threshold( depthmat, thresh, 0.16f, 1, 3);
     threshold( thresh, thresh2, 0.18f, 1, 4);
 
-    // cout << "thresh min = " << depthThresholdMin / 100.0f << " max = " << depthThresholdMax / 100.0f << endl;
-
     // Convert 32 bit depth matrix into 8 bit matrix for contour identification
     // also function multiplies the matrix by 255 increasing the range [0, 255]
-
     thresh2.convertTo(contour,CV_8UC1, 255 );
     // hsv.convertTo(contour,CV_8UC1, 255 );
 
@@ -308,7 +286,6 @@ int main(int argc, char **argv) {
 
     // Draw contour outline of hand
     cv::drawContours(contour, contours, largest_contour, cv::Scalar(255, 0, 0), 1);
-    // cv::imshow("Find contours", contour);
 
     // Add a circle drawing to the depth matrix if hand is detected
     // circle(contour, max_circle.center, max_circle.radius, cv::Scalar(255, 255, 255));
@@ -357,8 +334,6 @@ int main(int argc, char **argv) {
                 cout << "Standard dev of fingers = " << finger_stdev << endl;
                 // cout << max_circle << endl;
 
-                fingerToGesture(round(avg_num_fingers), max_circle.center, rgb->height, rgb->width);
-
                 // Call Gantry function only if the std dev is low enough
                 if(finger_stdev < NUM_FINGERS_STD_DEV) {
                   // cout << "Avg number of fingers = " << round(avg_num_fingers) << endl;
@@ -369,8 +344,6 @@ int main(int argc, char **argv) {
                 curr_num_finger_frames = 0;
                 total_count_fingers = 0;
                 fingers_in_frame.clear();
-                // cout << "Result of converting # fingers (" << avg_num_fingers << ") to gestures:" << fingerToGesture(avg_num_fingers) << endl;
-
               } else {
                 curr_num_finger_frames++;
                 total_count_fingers += validPoints.size();
