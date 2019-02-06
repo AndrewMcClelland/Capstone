@@ -16,6 +16,21 @@
 #define NUM_FRAMES_FINGER_AVG 100
 #define NUM_FINGERS_STD_DEV 0.5
 
+// Taken from robot_limits.h
+#define GANTRY_MIN_X 0
+#define GANTRY_MAX_X 3000
+#define GANTRY_MIN_Y -1795
+#define GANTRY_MAX_Y 0
+
+// #define KINECT_MIN_X 
+// #define KINECT_MIN_Y 
+// #define KINECT_MAX_X 
+// #define KINECT_MAX_Y 
+
+// #define CONV_X_KINECT_TO_GANTRY (GANTRY_MAX_X - GANTRY_MIN_X) / (KINECT_MAX_X - KINECT_MIN_X)
+// #define CONV_Y_KINECT_TO_GANTRY (GANTRY_MAX_Y - GANTRY_MIN_Y) / (KINECT_MAX_Y - KINECT_MIN_Y)
+
+
 using namespace std;
 using namespace cv;
 
@@ -31,7 +46,7 @@ class CircleParams
   }
 
   friend ostream& operator<<(ostream& os, const CircleParams &cp) {
-      os << "Centered at: [" << cp.center.x << ", " << cp.center.y << "]\tradius = " << cp.radius;
+      os << "Centered at (normal (x,y notation)): [" << cp.center.y << ", " << cp.center.x << "]\tradius = " << cp.radius;
       return os;
   }
 };
@@ -80,7 +95,7 @@ float innerAngle(float px1, float py1, float px2, float py2, float cx1, float cy
   return A;
 }
 
-bool fingerToGesture(const int numFingers, Point2f& center) {
+bool fingerToGesture(const int numFingers, const Point2f& center, const int kinectNumRows, const int kinectNumColumns) {
   // switch (numFingers) {
   //   case 0:
   //     cout << "Executing num fingers case 0" << endl;
@@ -106,7 +121,27 @@ bool fingerToGesture(const int numFingers, Point2f& center) {
     
   // }
 
-  cout << "moveto " + to_string((int)center.x) + " " + to_string((int)center.y) + " 0 180 35 -90" << endl;
+  float kinect_to_gantry_x = (float)(GANTRY_MAX_X - GANTRY_MIN_X) / kinectNumColumns;
+  float kinect_to_gantry_y = (float)(GANTRY_MAX_Y - GANTRY_MIN_Y) / kinectNumRows;
+
+  // Swap the 'center' representation because "x" of center is num rows (so really y in a normal point coordiante system)
+  int x_gantry = int(center.x * kinect_to_gantry_x) + GANTRY_MIN_X;
+  int y_gantry = int(center.y * kinect_to_gantry_y) + GANTRY_MIN_Y;
+
+  // Limit x and y coordiantes to be within their min and max values (inclusive)
+  x_gantry = x_gantry < GANTRY_MIN_X ? GANTRY_MIN_X : x_gantry;
+  x_gantry = x_gantry > GANTRY_MAX_X ? GANTRY_MAX_X : x_gantry;
+  y_gantry = y_gantry < GANTRY_MIN_Y ? GANTRY_MIN_Y : y_gantry;
+  y_gantry = y_gantry > GANTRY_MAX_Y ? GANTRY_MAX_Y : y_gantry;
+
+  // int min_x_gantry = 0 * kinect_to_gantry_x + GANTRY_MIN_X;
+  // int max_x_gantry = kinectNumColumns * kinect_to_gantry_x + GANTRY_MIN_X;
+  // int min_y_gantry = 0 * kinect_to_gantry_x + GANTRY_MIN_Y;
+  // int max_y_gantry = kinectNumRows * kinect_to_gantry_x + GANTRY_MIN_Y;
+
+  // printf("Min x gantry = %d, max x gantry = %d, min y gantry = %d, max y gantry = %d\n", min_x_gantry, max_x_gantry, min_y_gantry, max_y_gantry);
+
+  cout << "moveto " + to_string(x_gantry) + " " + to_string(y_gantry) + " 0 180 35 -90" << endl;
 }
 
 int main(int argc, char **argv) {
@@ -225,8 +260,9 @@ int main(int argc, char **argv) {
 
     // Convert 32 bit depth matrix into 8 bit matrix for contour identification
     // also function multiplies the matrix by 255 increasing the range [0, 255]
-    // thresh2.convertTo(contour,CV_8UC1, 255 );
-    hsv.convertTo(contour,CV_8UC1, 255 );
+
+    thresh2.convertTo(contour,CV_8UC1, 255 );
+    // hsv.convertTo(contour,CV_8UC1, 255 );
 
     // helper function finds countur in 8 bit depth matrix and returns
     // a hierarchical vector of contours (vector<vector<Point>>)
@@ -269,7 +305,6 @@ int main(int argc, char **argv) {
     // Setting params for max circle contour (the hand)
     max_circle.center = max_center;
     max_circle.radius = max_radius;
-    // cout << max_circle << endl;
 
     // Draw contour outline of hand
     cv::drawContours(contour, contours, largest_contour, cv::Scalar(255, 0, 0), 1);
@@ -320,11 +355,14 @@ int main(int argc, char **argv) {
                 double finger_stdev = sqrt(finger_sq_sum / NUM_FRAMES_FINGER_AVG - avg_num_fingers * avg_num_fingers);
                 
                 cout << "Standard dev of fingers = " << finger_stdev << endl;
+                // cout << max_circle << endl;
+
+                fingerToGesture(round(avg_num_fingers), max_circle.center, rgb->height, rgb->width);
 
                 // Call Gantry function only if the std dev is low enough
                 if(finger_stdev < NUM_FINGERS_STD_DEV) {
-                  cout << "Avg number of fingers = " << round(avg_num_fingers) << endl;
-                  // fingerToGesture(round(avg_num_fingers), max_circle.center);
+                  // cout << "Avg number of fingers = " << round(avg_num_fingers) << endl;
+                  fingerToGesture(round(avg_num_fingers), max_circle.center, rgb->height, rgb->width);
                 }
 
                 // Reset all counters/variables for next block of NUM_FRAMES_FINGER_AVG frames regardless
