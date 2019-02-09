@@ -1,4 +1,6 @@
 #include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui_c.h>
+#include "opencv2/videoio/videoio_c.h"
 #include <math.h> 
 #include <stdio.h>
 
@@ -19,14 +21,17 @@ public:
 int main(int, char**)
 {
     VideoCapture cap(0);
-    //cap.set(CV_CAP_PROP_FRAME_WIDTH, 256); 
-    //cap.set(CV_CAP_PROP_FRAME_HEIGHT, 256); 
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 480); 
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480); 
 
     if(!cap.isOpened())  // check if we succeeded
         return -1;
 
+    vector<object> object_list;
     Mat edges;
+
     namedWindow("edges",1);
+
     for(;;)
     {
         Mat frame;
@@ -40,7 +45,7 @@ int main(int, char**)
 
         cvtColor(frame, edges, COLOR_BGR2GRAY);
         GaussianBlur(edges, edges, Size(9,9), 4.0);
-        //Canny(edges, edges, 0, 30, 3);
+        Canny(edges, edges, 0, 30, 3);
         findContours(edges, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
         cout<<"num of objects: "<< contours.size()<<endl;
         for (int i = 0; i < contours.size(); i++) {
