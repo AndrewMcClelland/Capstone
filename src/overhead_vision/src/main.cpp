@@ -19,8 +19,8 @@ public:
 int main(int, char**)
 {
     VideoCapture cap(0);
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, 256); 
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 256); 
+    //cap.set(CV_CAP_PROP_FRAME_WIDTH, 256); 
+    //cap.set(CV_CAP_PROP_FRAME_HEIGHT, 256); 
 
     if(!cap.isOpened())  // check if we succeeded
         return -1;
@@ -50,8 +50,9 @@ int main(int, char**)
             cout<<"Object "<<i<<" has points:"<<endl;
             for (int j = 0; j < pts.size(); j++)
                 cout<<"Point "<<j<<" is at: "<< pts.at(j)<<endl;
+            drawContours(drawing, contours, i, cv::Scalar(255, 255, 255));
         }
-        drawContours(drawing, contours, i, cv::Scalar(255, 255, 255));
+        
     
         
         imshow("drawing", drawing);
