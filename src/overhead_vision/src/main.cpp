@@ -46,8 +46,10 @@ int main(int, char**)
         for (int i = 0; i < contours.size(); i++) {
             vector<Point> pts = contours.at(i);
             cout << "num of vertecies: "<< pts.size()<<endl;
-            double angle = atan((pts.at(3).y-pts.at(2).y)/(pts.at(3).x-pts.at(2).x));
-            cout<< "angle: "<< angle<<endl;
+            //double angle = atan((pts.at(3).y-pts.at(2).y)/(pts.at(3).x-pts.at(2).x));
+            cout<<"Object "<<i<<" has points:"<<endl;
+            for (int j = 0; j < pts.size(); j++)
+                cout<<"Point "<<j<<" is at: "<< pts.at(j)<<endl;
         }
         drawContours(drawing, contours, i, cv::Scalar(255, 255, 255));
     
