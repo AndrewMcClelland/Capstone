@@ -1,14 +1,27 @@
 #include <opencv2/opencv.hpp>
+#include <math.h> 
+#include <stdio.h>
 
 using namespace cv;
 using namespace std;
+
+class object
+{
+public:
+    double angle;
+    int x;
+    int y;
+    int width;
+    int height;
+
+};
 
 int main(int, char**)
 {
     VideoCapture cap(0);
     cap.set(CV_CAP_PROP_FRAME_WIDTH, 256); 
     cap.set(CV_CAP_PROP_FRAME_HEIGHT, 256); 
-    
+
     if(!cap.isOpened())  // check if we succeeded
         return -1;
 
@@ -26,11 +39,18 @@ int main(int, char**)
         Mat drawing = Mat::zeros( frame.size(), CV_8UC3 );
 
         cvtColor(frame, edges, COLOR_BGR2GRAY);
-        GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
-        Canny(edges, edges, 0, 30, 3);
+        GaussianBlur(edges, edges, Size(9,9), 4.0);
+        //Canny(edges, edges, 0, 30, 3);
         findContours(edges, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-        for (int i = 0; i < contours.size(); i++) 
-            drawContours(drawing, contours, i, cv::Scalar(255, 255, 255));
+        cout<<"num of objects: "<< contours.size()<<endl;
+        for (int i = 0; i < contours.size(); i++) {
+            vector<Point> pts = contours.at(i);
+            cout << "num of vertecies: "<< pts.size()<<endl;
+            double angle = atan((pts.at(3).y-pts.at(2).y)/(pts.at(3).x-pts.at(2).x));
+            cout<< "angle: "<< angle<<endl;
+        }
+        drawContours(drawing, contours, i, cv::Scalar(255, 255, 255));
+    
         
         imshow("drawing", drawing);
         waitKey(1);
