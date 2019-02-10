@@ -76,7 +76,7 @@ typedef struct {
  * Forward declaration of command handlers
  * * * * * * * * * * * * * * * * * * * * */
 
-ComFunc cmdMoveTo, cmdHelp, cmdQuit, cmdNotImpl, cmdUnknown;
+ComFunc cmdMoveTo, cmdHome, cmdHelp, cmdQuit, cmdNotImpl, cmdUnknown;
 
 
 /* * * * * * * * * * * * * * * * *
@@ -95,7 +95,7 @@ vector<COMMAND> commands = {
 	{ "move", 	cmdNotImpl,	"Move the specified Joint by the given distance [mm/degrees]." },
 	{ "move3step",	cmdNotImpl,	"Move the robot to the given absolute position using 3 steps." },
 	{ "raise",	cmdNotImpl,	"Raise the robot Z-axis to its top position." },
-	{ "home",	cmdNotImpl,	"Run the homing routine." },
+	{ "home",	cmdHome,	"Run the homing routine." },
 	{ "activate",	cmdNotImpl,	"Activate the robot joints." },
 	{ "deactivate",	cmdNotImpl,	"Deactivate the robot joints." },
 	{ "limits",	cmdNotImpl,	"Display the current robot software limits" },
@@ -237,6 +237,11 @@ void execute (const string& cmd, list<string>& args) {
 /* * * * * * * * * *
  * Command Handlers
  * * * * * * * * * */
+
+void cmdHome(list<string>& args) {
+	robot.home();
+	cout << "Robot has moved home!" << endl;
+}
 
 void cmdMoveTo (list<string>& args) {
 	if(args.size() != 3) {
