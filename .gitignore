@@ -32,6 +32,7 @@
 *.app
 
 # libfreenect2 Dir
+libfreenect/
 libfreenect2/
 
 buildLibFreeNectTest/
