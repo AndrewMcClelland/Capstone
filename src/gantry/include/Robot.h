@@ -88,6 +88,9 @@ public:
 
 	// Move the robot directly to the given relative position (relative to the current position)
 	void moveBy (const RobotPosition& delta, const double& speed = DefaultSpeed);
+
+	// TEAM 19 custom function to move robot to a position using the moveBy approach (since moveTo() doesn't really work)
+	void moveToLoop(const RobotPosition& _dest, const double& speed = DefaultSpeed);
 	
 	// Raise the robot to top Z-coordinate
 	void raise ();

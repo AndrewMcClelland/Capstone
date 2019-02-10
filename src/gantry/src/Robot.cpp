@@ -44,6 +44,8 @@ Robot::Robot (const std::string& _serialport, const std::string& _limit_file, st
 	if (!connected()) LOG << "Robot::Robot(): Cannot establish robot connection." << endl;
 
 	update(true);		// Initialize robot position and other state parameters
+
+	// controller << "ENABLE ARM" << finish;
 }
 
 Robot::~Robot () {
@@ -99,6 +101,8 @@ void Robot::update (const bool& thorough) {
 
 	RobotPosition prev = pos;
 	pos = getPos();
+
+	// cout << "Printing from Robot.cpp file in update() function...\n Current position is = " << pos << endl;
 	
 	// If there has been no movement since last update(). Assume we can skip checking status flags
 	if (pos == prev && !thorough) return;
@@ -160,8 +164,9 @@ void Robot::activate () {
 
 	if (activated) return;
 
-	controller << "ARM ON" << finish;
-	
+	// controller << "ARM ON" << finish;
+	controller << "ENABLE ARM" << finish;
+
 	cout << "Robot::activate(): Please make sure that the ARM POWER switch is on before pressing <Enter>.";
 	waitForEnter();
 	
@@ -174,7 +179,7 @@ void Robot::deactivate () {
 		return;
 	}
 
-	controller << "ARM OFF" << finish;
+	// controller << "ARM OFF" << finish;
 	
 	activated = false;
 }
@@ -274,6 +279,22 @@ void Robot::moveBy (const RobotPosition& delta, const double& speed) {
 	// Add the given relative position onto the current position and move there
 	update();
 	moveTo(pos + delta, speed);
+}
+
+void Robot::moveToLoop(const RobotPosition& _dest, const double& speed) {
+	RobotPosition currPos;
+	int error_x = 30, error_y = 30;
+
+	while(true) {
+		currPos = getPos();
+		
+		if(abs(currPos.x - _dest.x) < error_x && abs(currPos.y - _dest.y) < error_y) {
+			cout << "Reached destination " << _dest << endl;
+			return;
+		}
+		cout << "Still moving... current position = " << currPos << endl;
+		moveBy((_dest - currPos), 1.0);
+	}
 }
 
 void Robot::raise () {
