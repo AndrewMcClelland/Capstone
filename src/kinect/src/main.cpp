@@ -197,6 +197,11 @@ int main(int argc, char **argv) {
   vector<double> fingers_in_frame;
   double finger_stdev;
 
+  // OpenCV resize parameters
+  int screen_res_width = 1280, screen_res_height = 1024;
+  int scale_width, scale_height, scale;
+  int resized_window_width, resized_window_height;
+
   // Values used to alter the HSV bounds of the resulting image
   // DONT THINK THE HSV CURRENTLY WORKS BECAUSE THE INPUT FRAME IS DEPTH DATA ONLY...HAVE TO CONFIRM WITH LIPSKI
   int minH = 122, maxH = 180, minS = 27, maxS = 74, minV = 118, maxV = 198, depthThresholdMin = 0.16f, depthThresholdMax = 0.20f;
@@ -337,11 +342,11 @@ int main(int argc, char **argv) {
                 // cout << "Standard dev of fingers = " << finger_stdev << endl;
                 // cout << max_circle << endl;
 
-                fingerToGesture(round(avg_num_fingers), max_circle.center, contour.rows, contour.cols);
+                // fingerToGesture(round(avg_num_fingers), max_circle.center, contour.rows, contour.cols);
                 // Call Gantry function only if the std dev is low enough
                 if(finger_stdev < NUM_FINGERS_STD_DEV) {
                   // cout << "Avg number of fingers = " << round(avg_num_fingers) << endl;
-                  // fingerToGesture(round(avg_num_fingers), max_circle.center, contour.rows, contour.cols);
+                  fingerToGesture(round(avg_num_fingers), max_circle.center, contour.rows, contour.cols);
                 }
 
                 // Reset all counters/variables for next block of NUM_FRAMES_FINGER_AVG frames regardless
@@ -353,12 +358,28 @@ int main(int argc, char **argv) {
                 total_count_fingers += validPoints.size();
                 fingers_in_frame.push_back(validPoints.size());
                 
-                putText(contour, "Num fingers: " + to_string(avg_num_fingers) + "\nStdDev:" + to_string(finger_stdev), Point(10,300), FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2, LINE_AA);
+                putText(contour, "Num fingers: " + to_string(avg_num_fingers), Point(0, 25), FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1, LINE_AA);
+                putText(contour, "StdDev:" + to_string(finger_stdev), Point(0,50), FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1, LINE_AA);
               }
           }
       }
     
-    imshow("Depth Matrix", contour );
+
+    // Resizing window to monitor (1280 x 1024)
+    scale_width = screen_res_width / contour.cols;
+    scale_height = screen_res_height / contour.rows;
+    scale = min(scale_width, scale_height);
+
+    resized_window_width = int(contour.cols * scale);
+    resized_window_height = int(contour.rows * scale);
+
+    //cv2.WINDOW_NORMAL makes the output window resizealbe
+    namedWindow("Hand Detection", WINDOW_NORMAL);
+ 
+    //resize the window according to the screen resolution
+    resizeWindow("Hand Detection", resized_window_width, resized_window_height);
+
+    imshow("Hand Detection", contour);
 
     int key = cv::waitKey(1);
 
