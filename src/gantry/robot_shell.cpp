@@ -76,7 +76,7 @@ typedef struct {
  * Forward declaration of command handlers
  * * * * * * * * * * * * * * * * * * * * */
 
-ComFunc cmdMoveTo, cmdHome, cmdHelp, cmdQuit, cmdNotImpl, cmdUnknown;
+ComFunc cmdMoveTo, cmdMoveToLoop, cmdWhere, cmdHome, cmdHelp, cmdQuit, cmdNotImpl, cmdUnknown;
 
 
 /* * * * * * * * * * * * * * * * *
@@ -88,9 +88,10 @@ vector<COMMAND> commands = {
 	{ "?",		cmdHelp,	"Display help on the given command." },
 	{ "quit",	cmdQuit,	"Exit this program." },
 	{ "exit",	cmdQuit,	"Exit this program." },
-	{ "where",	cmdNotImpl,	"Display the current robot position." },
+	{ "where",	cmdWhere,	"Display the current robot position." },
 	{ "ready", 	cmdNotImpl,	"Move to the given ready location." },
 	{ "moveto", 	cmdMoveTo,	"Move the robot to the given absolute position." },
+	{ "movetoloop", 	cmdMoveToLoop,	"Move the robot to the given absolute position using a loop and moveBy() function." },
 	{ "moveby", 	cmdNotImpl,	"Move the robot to the given position relative to the current." },
 	{ "move", 	cmdNotImpl,	"Move the specified Joint by the given distance [mm/degrees]." },
 	{ "move3step",	cmdNotImpl,	"Move the robot to the given absolute position using 3 steps." },
@@ -254,10 +255,27 @@ void cmdMoveTo (list<string>& args) {
 		moveToParams.push_back(stoi(currArg));
 	}
 	
-	// robot.home();
-	// robot.moveTo(RobotPosition(0, 0, 0, 180, 35, -90), 1.0);
 	robot.moveTo(RobotPosition(moveToParams.at(0), moveToParams.at(1), moveToParams.at(2), 180, 35, -90), 1.0);
 	cout << "Robot is done moving to (" << moveToParams.at(0) << ", " << moveToParams.at(1) << ", " << moveToParams.at(2) << ", 180, 35, -90)" << endl;
+}
+
+void cmdMoveToLoop (list<string>& args) {
+	if(args.size() != 3) {
+		cerr << "ERROR: Require 3 arguments for moveToLoop() command in format [x,y,z]... entered " << args.size() << " commands....exiting!!!" << endl;
+		return;
+	}
+
+	vector<int> moveToLoopParams;
+	for(string currArg : args) {
+		moveToLoopParams.push_back(stoi(currArg));
+	}
+	
+	robot.moveToLoop(RobotPosition(moveToLoopParams.at(0), moveToLoopParams.at(1), moveToLoopParams.at(2), 180, 35, -90), 1.0);
+	cout << "Robot is done moving to (" << moveToLoopParams.at(0) << ", " << moveToLoopParams.at(1) << ", " << moveToLoopParams.at(2) << endl;
+}
+
+void cmdWhere (list<string>& args) {
+	cout << "Current posiiton = " << robot.currentPos() << endl;
 }
 
 void cmdHelp (list<string>& args) {

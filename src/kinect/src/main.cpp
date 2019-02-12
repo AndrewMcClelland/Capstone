@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
   libfreenect2::Registration* registration = new libfreenect2::Registration(dev->getIrCameraParams(), dev->getColorCameraParams());
   libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4), depth2rgb(1920, 1080 + 2, 4);
 
-  Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2, hsv;
+  Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2, hsv, combinedRGBDepthMat, depthMatConverted;
 
   int curr_num_finger_frames = 0, total_count_fingers = 0;
   float avg_num_fingers = -1, sq_sum;
@@ -216,21 +216,29 @@ int main(int argc, char **argv) {
   cv::createTrackbar("minDepthThreshold", windowName, &depthThresholdMin, 60);
   cv::createTrackbar("depthThresholdMax", windowName, &depthThresholdMax, 60);
 
+  // // Testing converting depth to colour frame
+  // while(!kinect_shutdown) { 
+  //   libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
+  //   libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
+  //   libfreenect2::Frame bigDepth(1920,1082,4);
+
+  //   registration->apply(rgb, depth, &undistorted, &registered,&bigDepth);
+  //   cv::Mat bigDepthMat;
+  //   cv::Mat(bigDepth.height, bigDepth.width, CV_32FC1, bigDepth.data).copyTo(bigDepthMat);
+  //   // cv::imshow("registeredInv", bigDepthMat / 4096.0f);
+    
+
+
+  //   int key = cv::waitKey(1);
+  //   listener.release(frames);
+  // }
+
   while(!kinect_shutdown) {
     listener.waitForNewFrame(frames);
 
     libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
     libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
-
-    Mat(depth->height, depth->width, CV_32FC1, depth->data).copyTo(depthmat);
-    Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
-    
-    // Convert RGB vals to HSV and limit frames to be within HSV bounds
-    cv::cvtColor(rgbmat, hsv, COLOR_BGR2HSV);
-    cv::inRange(hsv, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsv);
-
-    // Convert the depth matrix to range [0,1] instead of [0,4096]
-    depthmat = depthmat / 4096.0f;
+    // libfreenect2::Frame bigDepth(1920s,1082,4);
 
     // Variables for threholding and contour
     Mat thresh,thresh2, contour;
@@ -239,16 +247,31 @@ int main(int argc, char **argv) {
     CircleParams max_circle;
     max_circle.radius = 0;
 
+    // Get individual RGB & Depth Frames
+    Mat(depth->height, depth->width, CV_32FC1, depth->data).copyTo(depthmat);
+    Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(rgbmat);
+
+    // Convert the depth matrix to range [0,1] instead of [0,4096]
+    depthmat = depthmat / 4096.0f;
+
     // Threshold the depth so only hand will be visible in certain depth window
     threshold( depthmat, thresh, depthThresholdMin / 100.0f, 1, 3);
     threshold( thresh, thresh2, depthThresholdMax / 100.0f, 1, 4);
-    // threshold( depthmat, thresh, 0.16f, 1, 3);
-    // threshold( thresh, thresh2, 0.18f, 1, 4);
+
+    // Convert RGB vals to HSV and limit frames to be within HSV bounds
+    cv::cvtColor(rgbmat, hsv, COLOR_BGR2HSV);
+    cv::inRange(hsv, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsv);
+
+    // // Create combined RGB/Depth Frame (have to convert depth matrix to correct CV_8U type first)
+    // depthmat.convertTo(depthMatConverted, CV_8UC4);
+    // Mat(rgb->height, rgb->width, CV_8UC4, rgb->data).copyTo(combinedRGBDepthMat, depthMatConverted);
+    // combinedRGBDepthMat.copyTo(combinedRGBDepthMat, rgbmat);
 
     // Convert 32 bit depth matrix into 8 bit matrix for contour identification
     // also function multiplies the matrix by 255 increasing the range [0, 255]
     thresh2.convertTo(contour,CV_8UC1, 255 );
     // hsv.convertTo(contour,CV_8UC1, 255 );
+    // combinedRGBDepthMat.convertTo(contour,CV_8UC1, 255 );
 
     // helper function finds countur in 8 bit depth matrix and returns
     // a hierarchical vector of contours (vector<vector<Point>>)

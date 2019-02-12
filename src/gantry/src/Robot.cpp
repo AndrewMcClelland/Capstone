@@ -196,6 +196,7 @@ void Robot::home (const bool& redo) {
 	
 	// Run HOME program on controller and turn joint 6 by -90 degrees to make joint 5 tilt cue in right direction
 	controller << "RUN HOME" << finish;
+	// controller << "HOME" << finish;
 	
 	// The following is now included in the controller HOME program
 	// controller << "JOINT 6 -90" << finish;
@@ -283,7 +284,7 @@ void Robot::moveBy (const RobotPosition& delta, const double& speed) {
 
 void Robot::moveToLoop(const RobotPosition& _dest, const double& speed) {
 	RobotPosition currPos;
-	int error_x = 30, error_y = 30;
+	int error_x = 50, error_y = 50;
 
 	while(true) {
 		currPos = getPos();
@@ -293,7 +294,7 @@ void Robot::moveToLoop(const RobotPosition& _dest, const double& speed) {
 			return;
 		}
 		cout << "Still moving... current position = " << currPos << endl;
-		moveBy((_dest - currPos), 1.0);
+		moveBy((_dest - currPos), speed);
 	}
 }
 
