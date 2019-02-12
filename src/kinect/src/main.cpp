@@ -13,8 +13,12 @@
 #include <cmath>
 #include <numeric>  // for inner_product
 
+// Finger recognition stuff
 #define NUM_FRAMES_FINGER_AVG 100
 #define NUM_FINGERS_STD_DEV 0.5
+
+// Movement for the +/- x and y coordinates when doing the non hand-positioned based commands
+#define FIXED_GANTRY_MOVEMENT 200
 
 // Taken from robot_limits.h
 #define GANTRY_MIN_X 0
@@ -102,63 +106,88 @@ float innerAngle(float px1, float py1, float px2, float py2, float cx1, float cy
 }
 
 bool fingerToGesture(const int numFingers, const Point2f& center, const int kinectNumRows, const int kinectNumColumns) {
-  // switch (numFingers) {
-  //   case 0:
-  //     cout << "Executing num fingers case 0" << endl;
-  //     return true;
-  //   case 1:
-  //     cout << "Executing num fingers case 1" << endl;
-  //     return true;
-  //   case 2:
-  //     cout << "Executing num fingers case 2" << endl;
-  //     return true;
-  //   case 3:
-  //     cout << "Executing num fingers case 3" << endl;
-  //     return true;
-  //   case 4:
-  //     cout << "Executing num fingers case 4" << endl;
-  //     return true;
-  //   case 5:
-  //     cout << "Executing num fingers case 5" << endl;
-  //     return true;
-  //   default:
-  //     cout << "Error!!! Num fingers = " << numFingers << endl;
-  //     return false;
+  switch (numFingers) {
+
+    // Move gantry arm based on the gantry coordinate system
+    case 0:
+      // Conversion factor for hand recognition to gantry coordinates
+      float kinect_to_gantry_x = (float)(GANTRY_MAX_X - GANTRY_MIN_X) / kinectNumColumns;
+      float kinect_to_gantry_y = (float)(GANTRY_MAX_Y - GANTRY_MIN_Y) / kinectNumRows;
+
+        // Coordinates of hand with respect to the gantry coordinates
+      int x_gantry = int(center.x * kinect_to_gantry_x) + GANTRY_MIN_X;
+      int y_gantry = int(center.y * kinect_to_gantry_y) + GANTRY_MIN_Y;
+
+      // Limit x and y coordiantes to be within their min and max values (inclusive)
+      x_gantry = x_gantry < GANTRY_MIN_X ? GANTRY_MIN_X : x_gantry;
+      x_gantry = x_gantry > GANTRY_MAX_X ? GANTRY_MAX_X : x_gantry;
+      y_gantry = y_gantry < GANTRY_MIN_Y ? GANTRY_MIN_Y : y_gantry;
+      y_gantry = y_gantry > GANTRY_MAX_Y ? GANTRY_MAX_Y : y_gantry;
+
+      cout << "GANTRY coords : moveto " + to_string(x_gantry) + " " + to_string(y_gantry) + " 0" << endl;
+      return true;
+
+    // Move gantry arm based on the mounted kinect v1 coordinate system
+    case 1:
+      // Conversion factor for hand recognition to gantry coordinates
+      float kinect_to_mountedKinect_x = ARM_KINECT_X_RANGE_COORDS / kinectNumColumns;
+      float kinect_to_mountedKinect_y = ARM_KINECT_Y_RANGE_COORDS/ kinectNumRows;
+      
+      // Coordinates of hand with respect to the arm-mounted Kinect coordinates
+      int x_kinect = int(center.x * kinect_to_mountedKinect_x);
+      int y_kinect = int(center.y * kinect_to_mountedKinect_y);
+
+      x_kinect -= ARM_KINECT_X_RANGE_COORDS / 2;
+      y_kinect -= ARM_KINECT_Y_RANGE_COORDS / 2;
+
+      // Limit x and y coordiantes to be within their min and max values (inclusive)
+      x_kinect = x_kinect < 0 ? 0 : x_kinect;
+      x_kinect = x_kinect > ARM_KINECT_X_RANGE_COORDS ? ARM_KINECT_X_RANGE_COORDS : x_kinect;
+      y_kinect = y_kinect < 0 ? 0 : y_kinect;
+      y_kinect = y_kinect > ARM_KINECT_Y_RANGE_COORDS ? ARM_KINECT_Y_RANGE_COORDS : y_kinect;
+
+      cout << "Mounted Gantry coords : moveto " + to_string(x_kinect) + " " + to_string(y_kinect) + " 0" << endl;
+      return true;
+
+    // Move gantry arm in the 'x' direction by distance FIXED_GANTRY_MOVEMENT 
+    case 2:
+      // Move gantry in negative x direction if hand is on left half of kinect view
+      if(center.x <= kinectNumCols / 2) {
+        cout << "moveby " + to_string(FIXED_GANTRY_MOVEMENT * -1) + " 0 0" << endl;
+      }
+      // Move gantry in positive x direction if hand is on right half of kinect view
+      else {
+        cout << "moveby " + to_string(FIXED_GANTRY_MOVEMENT) + " 0 0" << endl;
+      }
+      
+      return true;
+
+    // Move gantry arm in the 'y' direction by distance FIXED_GANTRY_MOVEMENT 
+    case 3:
+      // Move gantry in negative y direction if hand is on bottom half of kinect view
+      if(center.y <= kinectNumRows / 2) {
+        cout << "moveby 0 " + to_string(FIXED_GANTRY_MOVEMENT * -1) + " 0" << endl;
+      }
+      // Move gantry in positive y direction if hand is on top half of kinect view
+      else {
+        cout << "moveby 0 " + to_string(FIXED_GANTRY_MOVEMENT) + " 0" << endl;
+      }
+      
+      return true;
+
+    case 4:
+      cout << "Executing num fingers case 4" << endl;
+      return true;
+
+    case 5:
+      cout << "Executing num fingers case 5" << endl;
+      return true;
+
+    default:
+      cout << "Error!!! Num fingers = " << numFingers << endl;
+      return false;
     
-  // }
-
-  // Conversion factor for hand recognition to gantry coordinates
-  float kinect_to_gantry_x = (float)(GANTRY_MAX_X - GANTRY_MIN_X) / kinectNumColumns;
-  float kinect_to_gantry_y = (float)(GANTRY_MAX_Y - GANTRY_MIN_Y) / kinectNumRows;
-
-  // Conversion factor for hand recognition to gantry coordinates
-  float kinect_to_mountedKinect_x = ARM_KINECT_X_RANGE_COORDS / kinectNumColumns;
-  float kinect_to_mountedKinect_y = ARM_KINECT_Y_RANGE_COORDS/ kinectNumRows;
-
-  // Coordinates of hand with respect to the gantry coordinates
-  int x_gantry = int(center.x * kinect_to_gantry_x) + GANTRY_MIN_X;
-  int y_gantry = int(center.y * kinect_to_gantry_y) + GANTRY_MIN_Y;
-
-  // Coordinates of hand with respect to the arm-mounted Kinect coordinates
-  int x_kinect = int(center.x * kinect_to_mountedKinect_x);
-  int y_kinect = int(center.y * kinect_to_mountedKinect_y);
-
-  // Limit x and y coordiantes to be within their min and max values (inclusive)
-  x_gantry = x_gantry < GANTRY_MIN_X ? GANTRY_MIN_X : x_gantry;
-  x_gantry = x_gantry > GANTRY_MAX_X ? GANTRY_MAX_X : x_gantry;
-  y_gantry = y_gantry < GANTRY_MIN_Y ? GANTRY_MIN_Y : y_gantry;
-  y_gantry = y_gantry > GANTRY_MAX_Y ? GANTRY_MAX_Y : y_gantry;
-
-  x_kinect = x_kinect < 0 ? 0 : x_kinect;
-  x_kinect = x_kinect > ARM_KINECT_X_RANGE_COORDS ? ARM_KINECT_X_RANGE_COORDS : x_kinect;
-  y_kinect = y_kinect < 0 ? 0 : y_kinect;
-  y_kinect = y_kinect > ARM_KINECT_Y_RANGE_COORDS ? ARM_KINECT_Y_RANGE_COORDS : y_kinect;
-
-  // cout << "Kinect limits = " + to_string(kinectNumColumns) + ", " + to_string(kinectNumRows) << endl;
-  // cout << "Kinect coordinates = " + to_string(center.x) + ", " + to_string(center.y) << endl;
-  cout << "GANTRY coords : moveto " + to_string(x_gantry) + " " + to_string(y_gantry) + " 0" << endl;
-  cout << "Mounted Gantry coords : moveto " + to_string(x_kinect) + " " + to_string(y_kinect) + " 0" << endl;
-
+  }
 }
 
 int main(int argc, char **argv) {
