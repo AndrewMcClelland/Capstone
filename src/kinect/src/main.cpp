@@ -13,12 +13,16 @@
 #include <cmath>
 #include <numeric>  // for inner_product
 
+// Kinect Serial Numbers
+#define KINECT_ARM_MOUNT_SERIAL 505083742542
+#define KINECT_HAND_RECOG_SERIAL 502327242542
+
 // Finger recognition stuff
 #define NUM_FRAMES_FINGER_AVG 100
 #define NUM_FINGERS_STD_DEV 0.5
 
 // Movement for the +/- x and y coordinates when doing the non hand-positioned based commands
-#define FIXED_GANTRY_MOVEMENT 200
+#define FIXED_GANTRY_MOVEMENT 300
 
 // Taken from robot_limits.h
 #define GANTRY_MIN_X 0
@@ -125,7 +129,7 @@ bool fingerToGesture(const int numFingers, const Point2f& center, const int kine
       y_gantry = y_gantry < GANTRY_MIN_Y ? GANTRY_MIN_Y : y_gantry;
       y_gantry = y_gantry > GANTRY_MAX_Y ? GANTRY_MAX_Y : y_gantry;
 
-      cout << "GANTRY coords : moveto " + to_string(x_gantry) + " " + to_string(y_gantry) + " 0" << endl;
+      cout << "movetoloop " + to_string(x_gantry) + " " + to_string(y_gantry) + " 0" << endl;
     }
     break;
 
@@ -143,7 +147,7 @@ bool fingerToGesture(const int numFingers, const Point2f& center, const int kine
       x_kinect -= int(kinectNumColumns * kinect_to_mountedKinect_x) / 2;
       y_kinect -= int(kinectNumRows * kinect_to_mountedKinect_y) / 2;
 
-      cout << "Mounted Kinect coords : moveby " + to_string(x_kinect) + " " + to_string(y_kinect) + " 0" << endl;
+      cout << "moveby " + to_string(x_kinect) + " " + to_string(y_kinect) + " 0" << endl;
     }
       break;
 
@@ -191,46 +195,69 @@ bool fingerToGesture(const int numFingers, const Point2f& center, const int kine
 
 int main(int argc, char **argv) {
 
-  libfreenect2::Freenect2 freenect2;
-  libfreenect2::Freenect2Device *dev = 0;
-  libfreenect2::PacketPipeline *pipeline = 0;
+  libfreenect2::Freenect2 freenect2_HAND;
+  // libfreenect2::Freenect2 freenect2_GRIP;
+  libfreenect2::Freenect2Device *dev_HAND = 0;
+  // libfreenect2::Freenect2Device *dev_GRIP = 0;
+  libfreenect2::PacketPipeline *pipeline_HAND = 0;
+  // libfreenect2::PacketPipeline *pipeline_GRIP = 0;
 
   // Suppressing output from the libfreenect2 logger (comment it out to make it log info to output)
   libfreenect2::setGlobalLogger(NULL);
 
   bool kinect_shutdown = false;
 
-  if(freenect2.enumerateDevices() == 0)
+  if(freenect2_HAND.enumerateDevices() == 0)
   {
     cout << "no device connected!" << endl;
     return -1;
   }
 
-  string serial = freenect2.getDefaultDeviceSerialNumber();
+  // if(freenect2_GRIP.enumerateDevices() == 0)
+  // {
+  //   cout << "no device connected!" << endl;
+  //   return -1;
+  // }
 
-  pipeline = new libfreenect2::OpenCLPacketPipeline();
+  // string serial = freenect2.getDefaultDeviceSerialNumber();
 
+  // pipeline_GRIP = new libfreenect2::OpenCLPacketPipeline();
+  pipeline_HAND = new libfreenect2::OpenCLPacketPipeline();
 
-  dev = freenect2.openDevice(serial, pipeline);
+  // dev_GRIP = freenect2_GRIP.openDevice(to_string(KINECT_ARM_MOUNT_SERIAL), pipeline_GRIP);
+  dev_HAND = freenect2_HAND.openDevice(to_string(KINECT_HAND_RECOG_SERIAL), pipeline_HAND);
 
-  if (dev == 0)
+  if (dev_HAND == 0)
   {
-	cerr << "No device opened!"<<endl;
+	cerr << "Hand kinect not opened!"<<endl;
 	return -1;
   }
 
-  libfreenect2::SyncMultiFrameListener listener(libfreenect2::Frame::Color | libfreenect2::Frame::Depth );
-  libfreenect2::FrameMap frames;
+  //  if (dev_GRIP == 0)
+  // {
+	// cerr << "Grip kinect not opened!"<<endl;
+	// return -1;
+  // }
 
-  dev->setIrAndDepthFrameListener(&listener);
-  dev->setColorFrameListener(&listener);
+  libfreenect2::SyncMultiFrameListener listener_HAND(libfreenect2::Frame::Color | libfreenect2::Frame::Depth );
+  // libfreenect2::SyncMultiFrameListener listener_GRIP(libfreenect2::Frame::Color | libfreenect2::Frame::Depth );
 
-  dev->start();
+  libfreenect2::FrameMap frames_HAND;
+  // libfreenect2::FrameMap frames_GRIP;
 
-  // cout << "device serial: " << dev->getSerialNumber() << endl;
-  // cout << "device firmware: " << dev->getFirmwareVersion() << endl;
+  dev_HAND->setIrAndDepthFrameListener(&listener_HAND);
+  dev_HAND->setColorFrameListener(&listener_HAND);
 
-  libfreenect2::Registration* registration = new libfreenect2::Registration(dev->getIrCameraParams(), dev->getColorCameraParams());
+  dev_HAND->start();
+
+  // dev_GRIP->setIrAndDepthFrameListener(&listener_GRIP);
+  // dev_GRIP->setColorFrameListener(&listener_GRIP);
+
+  // dev_GRIP->start();
+
+  libfreenect2::Registration* registration_HAND = new libfreenect2::Registration(dev_HAND->getIrCameraParams(), dev_HAND->getColorCameraParams());
+  // libfreenect2::Registration* registration_GRIP = new libfreenect2::Registration(dev_GRIP->getIrCameraParams(), dev_GRIP->getColorCameraParams());
+  
   libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4), depth2rgb(1920, 1080 + 2, 4);
 
   Mat rgbmat, depthmat, depthmatUndistorted, irmat, rgbd, rgbd2, hsv, combinedRGBDepthMat, depthMatConverted;
@@ -277,10 +304,12 @@ int main(int argc, char **argv) {
   // }
 
   while(!kinect_shutdown) {
-    listener.waitForNewFrame(frames);
+    listener_HAND.waitForNewFrame(frames_HAND);
+    // listener_GRIP.waitForNewFrame(frames_GRIP);
 
-    libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
-    libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
+    libfreenect2::Frame *depth = frames_HAND[libfreenect2::Frame::Depth];
+    libfreenect2::Frame *rgb = frames_HAND[libfreenect2::Frame::Color];
+    
     // libfreenect2::Frame bigDepth(1920s,1082,4);
 
     // Variables for threholding and contour
@@ -408,11 +437,11 @@ int main(int argc, char **argv) {
                 // cout << "Standard dev of fingers = " << finger_stdev << endl;
                 // cout << max_circle << endl;
 
-                fingerToGesture(round(avg_num_fingers), max_circle.center, contour.rows, contour.cols);
+                // fingerToGesture(round(avg_num_fingers), max_circle.center, contour.rows, contour.cols);
                 // Call Gantry function only if the std dev is low enough
                 if(finger_stdev < NUM_FINGERS_STD_DEV) {
                   // cout << "Avg number of fingers = " << round(avg_num_fingers) << endl;
-                  // fingerToGesture(round(avg_num_fingers), max_circle.center, contour.rows, contour.cols);
+                  fingerToGesture(round(avg_num_fingers), max_circle.center, contour.rows, contour.cols);
                 }
 
                 // Reset all counters/variables for next block of NUM_FRAMES_FINGER_AVG frames regardless
@@ -449,13 +478,18 @@ int main(int argc, char **argv) {
 
     int key = cv::waitKey(1);
 
-    listener.release(frames);
+    listener_HAND.release(frames_HAND);
+    // listener_GRIP.release(frames_GRIP);
   }
 
-  dev->stop();
-  dev->close();
+  dev_HAND->stop();
+  dev_HAND->close();
+
+  // dev_GRIP->stop();
+  // dev_GRIP->close();
 
 
-  delete registration;
+  delete registration_HAND;
+  // delete registration_GRIP;
   return  0;
 }
