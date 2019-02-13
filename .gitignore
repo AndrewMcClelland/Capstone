@@ -42,5 +42,8 @@ build/
 /.metadata/
 build/kinect/bin/
 
+build/kinect/bin/CMakeFiles/
+pcl/
+
 *.vscode
 
