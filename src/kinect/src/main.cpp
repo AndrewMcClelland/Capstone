@@ -452,9 +452,16 @@ int main(int argc, char **argv) {
                 curr_num_finger_frames++;
                 total_count_fingers += validPoints.size();
                 fingers_in_frame.push_back(validPoints.size());
-                
-                putText(contour, "Num fingers: " + to_string(avg_num_fingers), Point(0, 25), FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1, LINE_AA);
-                putText(contour, "StdDev:" + to_string(finger_stdev), Point(0,50), FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1, LINE_AA);
+                if (round(avg_num_fingers) > 1)
+                {
+                  putText(contour, "Num fingers: " + to_string(avg_num_fingers + 1), Point(0, 25), FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1, LINE_AA);
+                  putText(contour, "StdDev:" + to_string(finger_stdev), Point(0,50), FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1, LINE_AA);
+                }
+                else
+                {
+                  putText(contour, "Num fingers: " + to_string(avg_num_fingers), Point(0, 25), FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1, LINE_AA);
+                  putText(contour, "StdDev:" + to_string(finger_stdev), Point(0,50), FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255),1, LINE_AA);
+                }
               }
           }
       }
