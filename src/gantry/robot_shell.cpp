@@ -76,7 +76,7 @@ typedef struct {
  * Forward declaration of command handlers
  * * * * * * * * * * * * * * * * * * * * */
 
-ComFunc cmdMoveTo, cmdMoveToLoop, cmdWhere, cmdHome, cmdHelp, cmdQuit, cmdNotImpl, cmdUnknown;
+ComFunc cmdMoveTo, cmdMoveToLoop, cmdMoveBy, cmdWhere, cmdHome, cmdHelp, cmdQuit, cmdNotImpl, cmdUnknown;
 
 
 /* * * * * * * * * * * * * * * * *
@@ -92,7 +92,7 @@ vector<COMMAND> commands = {
 	{ "ready", 	cmdNotImpl,	"Move to the given ready location." },
 	{ "moveto", 	cmdMoveTo,	"Move the robot to the given absolute position." },
 	{ "movetoloop", 	cmdMoveToLoop,	"Move the robot to the given absolute position using a loop and moveBy() function." },
-	{ "moveby", 	cmdNotImpl,	"Move the robot to the given position relative to the current." },
+	{ "moveby", 	cmdMoveBy,	"Move the robot to the given position relative to the current." },
 	{ "move", 	cmdNotImpl,	"Move the specified Joint by the given distance [mm/degrees]." },
 	{ "move3step",	cmdNotImpl,	"Move the robot to the given absolute position using 3 steps." },
 	{ "raise",	cmdNotImpl,	"Raise the robot Z-axis to its top position." },
@@ -272,6 +272,21 @@ void cmdMoveToLoop (list<string>& args) {
 	
 	robot.moveToLoop(RobotPosition(moveToLoopParams.at(0), moveToLoopParams.at(1), moveToLoopParams.at(2), 180, 35, -90), 1.0);
 	cout << "Robot is done moving to (" << moveToLoopParams.at(0) << ", " << moveToLoopParams.at(1) << ", " << moveToLoopParams.at(2) << endl;
+}
+
+void cmdMoveBy (list<string>& args) {
+	if(args.size() != 3) {
+		cerr << "ERROR: Require 3 arguments for moveBy() command in format [x,y,z]... entered " << args.size() << " commands....exiting!!!" << endl;
+		return;
+	}
+
+	vector<int> moveByParams;
+	for(string currArg : args) {
+		moveByParams.push_back(stoi(currArg));
+	}
+	
+	robot.moveBy(RobotPosition(moveByParams.at(0), moveByParams.at(1), moveByParams.at(2), 180, 35, -90), 1.0);
+	cout << "Robot is done moving by (" << moveByParams.at(0) << ", " << moveByParams.at(1) << ", " << moveByParams.at(2) << endl;
 }
 
 void cmdWhere (list<string>& args) {
