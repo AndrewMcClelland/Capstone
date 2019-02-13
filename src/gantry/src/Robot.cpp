@@ -10,6 +10,18 @@ extern "C" {
 #define LOG (*log)	// Convenient for accesing log as a normal ostream
 #define MOVING_CHECK_TIME 100000 // Time in microseconds between samples to check for current movement (< 1,000,000)
 
+// Gantry coordinates/inch 
+#define GANTRY_X_COORD_PER_INCH 3000.0f / 132.0f
+#define GANTRY_Y_COORD_PER_INCH 1750.0f / 83.0f
+
+// Kinect inch range
+#define ARM_KINECT_X_RANGE_INCHES 58.0f
+#define ARM_KINECT_Y_RANGE_INCHES 72.0f
+
+#define ARM_KINECT_X_RANGE_COORDS ARM_KINECT_X_RANGE_INCHES * GANTRY_X_COORD_PER_INCH
+#define ARM_KINECT_Y_RANGE_COORDS ARM_KINECT_Y_RANGE_INCHES * GANTRY_Y_COORD_PER_INCH
+
+
 using namespace std;
 using namespace RobotManipulators;
 
@@ -284,16 +296,16 @@ void Robot::moveBy (const RobotPosition& delta, const double& speed) {
 
 void Robot::moveToLoop(const RobotPosition& _dest, const double& speed) {
 	RobotPosition currPos;
-	int error_x = 50, error_y = 50;
+	int error_x = 0.6 * (ARM_KINECT_X_RANGE_COORDS / 2), error_y = 0.6 * (ARM_KINECT_Y_RANGE_COORDS / 2);
 
 	while(true) {
 		currPos = getPos();
 		
 		if(abs(currPos.x - _dest.x) < error_x && abs(currPos.y - _dest.y) < error_y) {
-			cout << "Reached destination " << _dest << endl;
+			cout << "Reached position " << currPos << " with error of " << (_dest - currPos) << " from goal destination of " << _dest << endl;
 			return;
 		}
-		cout << "Still moving... current position = " << currPos << endl;
+		cout << endl << "Still moving... current position = " << currPos << " and trying to get within [x,y] = " << error_x << ", " << error_y << " of goal destination of " << _dest << endl;
 		moveBy((_dest - currPos), speed);
 	}
 }
