@@ -1,3 +1,0 @@
-/home/gantryrobot/Desktop/Capstone/build/kinect/bin/CMakeFiles/rebuild_cache.dir
-/home/gantryrobot/Desktop/Capstone/build/kinect/bin/CMakeFiles/main.dir
-/home/gantryrobot/Desktop/Capstone/build/kinect/bin/CMakeFiles/edit_cache.dir
