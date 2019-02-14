@@ -22,8 +22,8 @@ public:
 int main(int, char**)
 {
     VideoCapture cap(0);
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, 800); 
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 600); 
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280); 
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 800); 
 
     if(!cap.isOpened())  // check if we succeeded
         return -1;
@@ -41,7 +41,9 @@ int main(int, char**)
 
     int iLowV = 0;
     int iHighV = 255;
-
+    
+    namedWindow("Camera capture");
+    namedWindow("Camera detection");
   
     cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
     cvCreateTrackbar("HighH", "Control", &iHighH, 179);
@@ -53,26 +55,22 @@ int main(int, char**)
     cvCreateTrackbar("HighV", "Control", &iHighV, 255);
 
 
-
-
+    Mat frame, frame_HSV, frame_threshold,edges;
+    vector<cv::Vec4i> hierarchy;
+    vector<vector<Point> > contours;
     for(;;)
     {
-        Mat frame;
-        
 
-        Mat imgHSV;
-        Mat imgThresholded;
-
-        vector<cv::Vec4i> hierarchy;
-        vector<vector<Point> > contours;
-        
         cap >> frame; // get a new frame from camera
 
 
-        cvtColor(frame, imgHSV, COLOR_BGR2HSV);
-        inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); 
+        cvtColor(frame, frame_HSV, COLOR_BGR2HSV);
 
-        GaussianBlur(edges, edges, Size(9,9), 4.0);
+
+        inRange(frame_HSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), frame_threshold); 
+        imshow("Camera detection", frame_threshold);
+
+        GaussianBlur(frame_threshold, edges, Size(9,9), 4.0);
         Canny(edges, edges, 0, 30, 3);
         findContours(edges, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
         vector<vector<Point> > contours_poly( contours.size() );
