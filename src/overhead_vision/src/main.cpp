@@ -22,8 +22,8 @@ public:
 int main(int, char**)
 {
     VideoCapture cap(0);
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280); 
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 800); 
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 800); 
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 600); 
 
     if(!cap.isOpened())  // check if we succeeded
         return -1;
@@ -75,7 +75,9 @@ int main(int, char**)
         findContours(edges, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
         vector<vector<Point> > contours_poly( contours.size() );
         
-        imshow("drawing", drawing);
+        vector<Rect> boundRect( contours.size() );
+        vector<Point2f>centers( contours.size() );
+        
         waitKey(1);
     }
     // the camera will be deinitialized automatically in VideoCapture destructor
